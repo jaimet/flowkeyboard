@@ -53,10 +53,10 @@ public class KeyboardView extends View
   public static final String AUTO = "AUTO";
   public static final String NO_AUTO = "NO_AUTO";
 
-  public KeyboardView(FlowInputMethod inputMethod, KeyboardLayout baseKeyboard, KeyboardLayout shiftKeyboard, KeyboardLayout altKeyboard, KeyboardLayout altShiftKeyboard)
+  public KeyboardView(Context context, KeyboardLayout baseKeyboard, KeyboardLayout shiftKeyboard, KeyboardLayout altKeyboard, KeyboardLayout altShiftKeyboard)
   {
-    super(inputMethod);
-    this.inputMethod = inputMethod;
+    super(context);
+    inputMethod = (context instanceof FlowInputMethod ? (FlowInputMethod) context : null);
     this.baseKeyboard = baseKeyboard;
     this.shiftKeyboard = shiftKeyboard;
     this.altKeyboard = altKeyboard;
@@ -165,24 +165,33 @@ public class KeyboardView extends View
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    WindowManager wm = (WindowManager) inputMethod.getSystemService(Context.WINDOW_SERVICE);
+    WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
     int width = getMeasuredWidth();
     int height = getMeasuredHeight();
-    if (inputMethod.isFullscreenMode())
+    if (inputMethod != null && inputMethod.isFullscreenMode())
       height = Math.min(height, (int) (0.65f*wm.getDefaultDisplay().getHeight()));
+    height = computeHeight(width, height);
+    SharedPreferences preferences = getContext().getSharedPreferences("Flow", Context.MODE_PRIVATE);
+    height = Math.min(height, preferences.getInt("keyboardSize", height));
+    setMeasuredDimension(width, height);
+    if (getMeasuredWidth() > 0 && getMeasuredHeight() > 0)
+      createBackground(getMeasuredWidth(), getMeasuredHeight());
+  }
+
+  public static int computeHeight(int availableWidth, int availableHeight)
+  {
     int spacing, offset;
-    if (width/7 < height/5)
+    if (availableWidth/7 < availableHeight/5)
     {
-      spacing = width/7;
-      offset = (width-6*spacing)/2;
+      spacing = availableWidth/7;
+      offset = (availableWidth-6*spacing)/2;
     }
     else
     {
-      spacing = height/5;
-      offset = (height-4*spacing)/2;
+      spacing = availableHeight/5;
+      offset = (availableHeight-4*spacing)/2;
     }
-    height = Math.min(height, 5*spacing+offset/8);
-    setMeasuredDimension(width, height);
+    return Math.min(availableHeight, 5*spacing+offset/8);
   }
 
   public void createBackground(int width, int height)
@@ -191,7 +200,15 @@ public class KeyboardView extends View
     float density = getResources().getDisplayMetrics().density;
     createPaths();
     Path path = new Path();
-    int xoffset = (width-6*spacing)/2;
+    SharedPreferences preferences = getContext().getSharedPreferences("Flow", Context.MODE_PRIVATE);
+    int keyboardPosition = Math.min(height, preferences.getInt("keyboardPosition", 1));
+    int xoffset;
+    if (keyboardPosition == 0)
+      xoffset = spacing/2;
+    else if (keyboardPosition == 1)
+      xoffset = (width-6*spacing)/2;
+    else
+      xoffset = (int) (width-6.5*spacing);
     int yoffset = (height-4*spacing)/2;
     float radius = 0.47f*spacing;
     Bitmap background = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -317,7 +334,7 @@ public class KeyboardView extends View
           }
           else if (altkey == '.')
           {
-            if (!inputMethod.isSimpleModePermanent())
+            if (inputMethod != null && !inputMethod.isSimpleModePermanent())
             {
               if (inputMethod.isSimpleMode())
               {

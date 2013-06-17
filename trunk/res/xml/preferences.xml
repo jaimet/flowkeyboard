@@ -30,6 +30,10 @@
             android:title="@string/backspaceRate"
             android:summary="@string/backspaceRateDescription"
             android:key="backspaceRate" />
+        <Preference
+            android:title="@string/sizeAndPosition"
+            android:summary="@string/sizeAndPositionDescription"
+            android:key="keyboardSize" />
     </PreferenceCategory>
     <PreferenceCategory
             android:title="@string/help">

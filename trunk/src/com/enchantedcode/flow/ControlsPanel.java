@@ -92,18 +92,9 @@ public class ControlsPanel extends View
     int height = getMeasuredHeight();
     if (im.isFullscreenMode())
       height = Math.min(height, (int) (0.65f*wm.getDefaultDisplay().getHeight()));
-    int spacing, offset;
-    if (width/7 < height/5)
-    {
-      spacing = width/7;
-      offset = (width-6*spacing)/2;
-    }
-    else
-    {
-      spacing = height/5;
-      offset = (height-4*spacing)/2;
-    }
-    height = Math.min(height, 5*spacing+offset/8);
+    height = KeyboardView.computeHeight(width, height);
+    SharedPreferences preferences = getContext().getSharedPreferences("Flow", Context.MODE_PRIVATE);
+    height = Math.min(height, preferences.getInt("keyboardSize", height));
     setMeasuredDimension(width, height);
   }
 
