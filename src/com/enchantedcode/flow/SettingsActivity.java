@@ -35,6 +35,7 @@ public class SettingsActivity extends PreferenceActivity
     findPreference("popupDuration").setOnPreferenceClickListener(new ValueListener("popupDuration", R.string.popupDuration, 3, 18));
     findPreference("longPressDelay").setOnPreferenceClickListener(new ValueListener("longPressDelay", R.string.longPressDelay, 40, 70));
     findPreference("backspaceRate").setOnPreferenceClickListener(new ValueListener("backspaceRate", R.string.backspaceRate, 6, 15));
+    findPreference("keyboardSize").setOnPreferenceClickListener(new DocumentListener(AdjustSizeActivity.class));
     findPreference("about").setOnPreferenceClickListener(new DocumentListener(About.class));
     findPreference("manual").setOnPreferenceClickListener(new DocumentListener(Manual.class));
     findPreference("tutorial").setOnPreferenceClickListener(new DocumentListener(Tutorial.class));
