@@ -514,6 +514,14 @@ public class TouchListener implements View.OnTouchListener
           if (results.size() > 0)
           {
             candidates = new String[] {results.get(0)};
+            if (shiftMode == KeyboardView.ModifierMode.DOWN)
+            {
+              char input[] = candidates[0].toCharArray();
+              input[0] = Character.toUpperCase(input[0]);
+              candidates[0] = new String(input);
+            }
+            else if (shiftMode == KeyboardView.ModifierMode.LOCKED)
+              candidates[0] = candidates[0].toUpperCase();
             skipCharacters = 0;
             spaceBeforeCandidates = false;
             if (inputMethod != null)
