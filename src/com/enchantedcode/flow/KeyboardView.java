@@ -420,7 +420,7 @@ public class KeyboardView extends View
     else
       canvas.drawText(word, overlay.getWidth()/2, (spacing-metrics.top+metrics.bottom)/2, paint);
     overlayStartTime = System.currentTimeMillis();
-    handler.postDelayed(new Runnable()
+    handler.post(new Runnable()
     {
       public void run()
       {
@@ -428,7 +428,7 @@ public class KeyboardView extends View
         if (System.currentTimeMillis()-overlayStartTime < overlayTime)
             handler.postDelayed(this, 40);
       }
-    }, 40);
+    });
     invalidate();
   }
 
