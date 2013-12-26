@@ -151,6 +151,7 @@ public class ControlsPanel extends View
     canvas.drawRoundRect(cutBounds, cornerRadius, cornerRadius, paint);
     canvas.drawRoundRect(copyBounds, cornerRadius, cornerRadius, paint);
     canvas.drawRoundRect(pasteBounds, cornerRadius, cornerRadius, paint);
+    paint.setStyle(Paint.Style.FILL_AND_STROKE);
     canvas.drawText("\u2190", leftBounds.left+0.5f*(leftBounds.right-leftBounds.left), leftBounds.top+0.6f*spacing, paint);
     canvas.drawText("\u2192", rightBounds.left+0.5f*(rightBounds.right-rightBounds.left), rightBounds.top+0.6f*spacing, paint);
     canvas.drawText("\u2191", upBounds.left+0.5f*(upBounds.right-upBounds.left), upBounds.top+0.6f*spacing, paint);
