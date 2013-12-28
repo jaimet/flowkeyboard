@@ -18,8 +18,11 @@ package com.enchantedcode.flow;
  */
 
 import android.content.*;
+import android.database.*;
 import android.inputmethodservice.*;
+import android.os.*;
 import android.preference.*;
+import android.provider.*;
 import android.text.*;
 import android.view.*;
 import android.view.inputmethod.*;
@@ -42,6 +45,20 @@ public class FlowInputMethod extends InputMethodService
   public void onCreate()
   {
     super.onCreate();
+    getContentResolver().registerContentObserver(UserDictionary.Words.CONTENT_URI, true, new ContentObserver(new Handler()) {
+      @Override
+      public void onChange(boolean selfChange)
+      {
+        // The user dictionary has changed, so we'll need to reload it.
+
+        dictionary = null;
+        if (isInputViewShown())
+        {
+          SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+          dictionary = new Dictionary(FlowInputMethod.this, prefs.getString("dictionary", "american"));
+        }
+      }
+    });
   }
   @Override
   public View onCreateInputView()
