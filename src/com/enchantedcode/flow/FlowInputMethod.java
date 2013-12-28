@@ -172,6 +172,12 @@ public class FlowInputMethod extends InputMethodService
       touchListener.selectCandidate(0, true);
   }
 
+  @Override
+  public void onWindowShown()
+  {
+    toggle.setSelected(false);
+  }
+
   public TouchListener getTouchListener()
   {
     return touchListener;

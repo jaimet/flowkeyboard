@@ -35,15 +35,23 @@ public class ControlsToggle extends View
     paint.setAntiAlias(true);
   }
 
+  public boolean getSelected()
+  {
+    return selected;
+  }
+
+  public void setSelected(boolean select)
+  {
+    selected = select;
+    im.getControlsPanel().setVisibility(selected ? VISIBLE : INVISIBLE);
+    invalidate();
+  }
+
   @Override
   public boolean onTouchEvent(MotionEvent event)
   {
     if (event.getAction() == MotionEvent.ACTION_DOWN)
-    {
-      selected = !selected;
-      im.getControlsPanel().setVisibility(selected ? VISIBLE : INVISIBLE);
-      invalidate();
-    }
+      setSelected(!selected);
     return true;
   }
 
