@@ -79,8 +79,18 @@ public class Dictionary
           replacements.put(c.charAt(0), entry.getKey());
     try
     {
-      int id = (dictionary.equals("american") ? R.raw.american : R.raw.british);
-      DataInputStream in = new DataInputStream(context.getResources().openRawResource(id));
+      int id = R.raw.american;
+      if (dictionary.equals("british"))
+        id = R.raw.british;
+      else if (dictionary.equals("french"))
+        id = R.raw.french;
+      else if (dictionary.equals("german"))
+        id = R.raw.german;
+      else if (dictionary.equals("portuguese"))
+        id = R.raw.portuguese;
+      else if (dictionary.equals("spanish"))
+        id = R.raw.spanish;
+      DataInputStream in = new DataInputStream(new BufferedInputStream(context.getResources().openRawResource(id)));
       try
       {
         while (true)
@@ -485,7 +495,7 @@ public class Dictionary
       float score = scoreWord(word, trace, wordStart, i, traceStart, mid, cutoff);
       if (score < cutoff)
       {
-        score += scoreWord(word, trace, i, wordEnd, mid, traceEnd, cutoff - score);
+        score += scoreWord(word, trace, i, wordEnd, mid, traceEnd, cutoff-score);
         if (score < bestScore)
         {
           bestScore = score;
