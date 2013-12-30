@@ -11,12 +11,20 @@
     <string name="dictionaryDescription">Select the spelling dictionary to use</string>
     <string name="preferences">Preferences</string>
     <string-array name="dictionaryEntries">
-        <item>American</item>
-        <item>British</item>
+        <item>English (American)</item>
+        <item>English (British)</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Portuguese</item>
+        <item>Spanish</item>
     </string-array>
     <string-array name="dictionaryValues">
         <item>american</item>
         <item>british</item>
+        <item>french</item>
+        <item>german</item>
+        <item>portuguese</item>
+        <item>spanish</item>
     </string-array>
     <string name="userDictionary">User Dictionary</string>
     <string name="userDictionaryDescription">Add words to the dictionary</string>
