@@ -32,7 +32,7 @@ public class TouchListener implements View.OnTouchListener
 {
   private final KeyboardView keyboardView;
   private final CandidatesView candidatesView;
-  private final Dictionary dictionary;
+  private Dictionary dictionary;
   private final Handler handler;
   private final ArrayList<TracePoint> trace;
   private final LinkedList<Point> displayedPoints;
@@ -89,6 +89,11 @@ public class TouchListener implements View.OnTouchListener
   public String[] getCandidates()
   {
     return candidates;
+  }
+
+  public void setDictionary(Dictionary dictionary)
+  {
+    this.dictionary = dictionary;
   }
 
   public boolean onTouch(View view, MotionEvent ev)
