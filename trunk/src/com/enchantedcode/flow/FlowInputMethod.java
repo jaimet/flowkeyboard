@@ -51,12 +51,7 @@ public class FlowInputMethod extends InputMethodService
       {
         // The user dictionary has changed, so we'll need to reload it.
 
-        dictionary = null;
-        if (isInputViewShown())
-        {
-          SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-          dictionary = new Dictionary(FlowInputMethod.this, prefs.getString("dictionary", "american"));
-        }
+        rebuildDictionary();
       }
     });
   }
@@ -175,7 +170,8 @@ public class FlowInputMethod extends InputMethodService
   @Override
   public void onWindowShown()
   {
-    toggle.setSelected(false);
+    if (toggle != null)
+      toggle.setSelected(false);
   }
 
   public TouchListener getTouchListener()
@@ -191,6 +187,11 @@ public class FlowInputMethod extends InputMethodService
   public View getControlsPanel()
   {
     return controlsPanel;
+  }
+
+  public ControlsToggle getControlsToggle()
+  {
+    return toggle;
   }
 
   public boolean isSimpleMode()
@@ -245,6 +246,18 @@ public class FlowInputMethod extends InputMethodService
         }
       }
       keyboardView.setShiftMode(capitalize ? KeyboardView.ModifierMode.DOWN : KeyboardView.ModifierMode.UP);
+    }
+  }
+
+  public void rebuildDictionary()
+  {
+    dictionary = null;
+    if (isInputViewShown())
+    {
+      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+      lastDictionaryName = prefs.getString("dictionary", "american");
+      dictionary = new Dictionary(FlowInputMethod.this, lastDictionaryName);
+      touchListener.setDictionary(dictionary);
     }
   }
 }

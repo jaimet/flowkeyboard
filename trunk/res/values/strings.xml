@@ -46,6 +46,7 @@
     <string name="tutorial">Tutorial</string>
     <string name="aboutFlow">About Flow</string>
     <string name="settings">Settings</string>
+    <string name="language">Language</string>
     <string name="leftArrow">\u2190</string>
     <string name="rightArrow">\u2192</string>
     <string name="upArrow">\u2191</string>
