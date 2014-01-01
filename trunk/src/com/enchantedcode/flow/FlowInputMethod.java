@@ -252,6 +252,7 @@ public class FlowInputMethod extends InputMethodService
   public void rebuildDictionary()
   {
     dictionary = null;
+    touchListener.setDictionary(null);
     if (isInputViewShown())
     {
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());

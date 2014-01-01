@@ -90,16 +90,18 @@ public class Dictionary
         id = R.raw.portuguese;
       else if (dictionary.equals("spanish"))
         id = R.raw.spanish;
-      DataInputStream in = new DataInputStream(new BufferedInputStream(context.getResources().openRawResource(id)));
+      BufferedInputStream in = new BufferedInputStream(context.getResources().openRawResource(id));
       try
       {
         while (true)
         {
-          int length = in.readByte();
+          int length = in.read();
+          if (length == -1)
+            break;
           char word[] = new char[length];
           for (int i = 0; i < length; i++)
-            word[i] = in.readChar();
-          wordList.add(new SortedWord(word, (short) (in.readByte()&255)));
+            word[i] = (char) (256*in.read()+in.read());
+          wordList.add(new SortedWord(word, (short) (in.read()&255)));
         }
       }
       catch (EOFException ex)
@@ -124,6 +126,7 @@ public class Dictionary
 
     // Add words from the user dictionary.
 
+    ArrayList<SortedWord> userWordList = new ArrayList<SortedWord>();
     Cursor cursor = context.getContentResolver().query(UserDictionary.Words.CONTENT_URI, new String[] {UserDictionary.Words.WORD, UserDictionary.Words.FREQUENCY}, null, null, null);
     if (cursor.moveToFirst())
     {
@@ -135,22 +138,41 @@ public class Dictionary
           frequency = 0;
         if (frequency > 255)
           frequency = 255;
-        wordList.add(new SortedWord(word.toCharArray(), (short) frequency));
+        userWordList.add(new SortedWord(word.toCharArray(), (short) frequency));
       } while (cursor.moveToNext());
     }
     cursor.close();
 
+    // Sort the words from the user dictionary, then merge them into the main word list (which is already sorted).
+
+    Collections.sort(userWordList);
+    int totalWords = wordList.size()+userWordList.size();
+    ArrayList<SortedWord> mergedWordList = new ArrayList<SortedWord>(totalWords);
+    int nextMainWord = 0, nextUserWord = 0;
+    for (int i = 0; i < totalWords; i++)
+    {
+      if (nextUserWord == userWordList.size())
+        mergedWordList.add(wordList.get(nextMainWord++));
+      else if (nextMainWord == wordList.size())
+        mergedWordList.add(userWordList.get(nextUserWord++));
+      else if (wordList.get(nextMainWord).compareTo(userWordList.get(nextUserWord)) == -1)
+        mergedWordList.add(wordList.get(nextMainWord++));
+      else
+        mergedWordList.add(userWordList.get(nextUserWord++));
+    }
+    wordList = null;
+    userWordList = null;
+
     // Build the data structures.
     
-    Collections.sort(wordList);
-    words = new char[wordList.size()][];
-    wordTraces = new char[wordList.size()][];
-    wordFrequency = new short[wordList.size()];
+    words = new char[mergedWordList.size()][];
+    wordTraces = new char[mergedWordList.size()][];
+    wordFrequency = new short[mergedWordList.size()];
     for (int i = 0; i < words.length; i++)
     {
-      char word[] = wordList.get(i).word;
+      char word[] = mergedWordList.get(i).word;
       words[i] = word;
-      wordFrequency[i] = wordList.get(i).frequency;
+      wordFrequency[i] = mergedWordList.get(i).frequency;
       int length = word.length;
       int j;
       for (j = 0; j < length; j++)
