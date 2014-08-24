@@ -162,7 +162,7 @@ public class TouchListener implements View.OnTouchListener
             else if (isDeleting && inputMethod != null)
             {
               inputMethod.sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
-              showCompletionsFromPrefix();
+              setCandidates(null, CandidatesType.None);
               handler.postDelayed(this, backspaceDelay);
             }
           }
@@ -170,8 +170,11 @@ public class TouchListener implements View.OnTouchListener
       }, longPressDelay);
       return true;
     }
-    if (ev.getAction() == MotionEvent.ACTION_UP)
+    if (ev.getAction() == MotionEvent.ACTION_UP && isDeleting)
+    {
+      showCompletionsFromPrefix();
       isDeleting = false;
+    }
     if (!dragInProgress)
       return true;
     float dx = x-lastx;
@@ -766,7 +769,7 @@ public class TouchListener implements View.OnTouchListener
   public void suggestReplacementsForExistingWord()
   {
     InputConnection ic = inputMethod.getCurrentInputConnection();
-    if (ic == null || keyboard == null)
+    if (ic == null || keyboard == null || isDeleting)
       return;
 
     // Search backward to the start of the word.
