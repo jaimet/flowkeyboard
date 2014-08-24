@@ -171,13 +171,13 @@ public class FlowInputMethod extends InputMethodService
   public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd)
   {
     super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd);
-    boolean jumped = (newSelStart != oldSelStart+1 && !touchListener.getCandidatesAreForTrace());
+    boolean jumped = (newSelStart != oldSelStart+1 && touchListener.getCandidatesType() != TouchListener.CandidatesType.Trace);
     selectionStart = newSelStart;
     selectionEnd = newSelEnd;
     updateShiftMode();
     if (candidatesEnd != -1 && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd))
       touchListener.selectCandidate(0, true);
-    if (candidatesEnd == -1 && (touchListener.getCandidates() == null || touchListener.getCandidatesAreForExistingWord() || jumped))
+    if (candidatesEnd == -1 && (touchListener.getCandidates() == null || touchListener.getCandidatesType() == TouchListener.CandidatesType.ExistingWord || jumped))
       touchListener.suggestReplacementsForExistingWord();
   }
 
