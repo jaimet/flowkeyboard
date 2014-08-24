@@ -41,8 +41,8 @@ public class CandidatesView extends View
   public void setCandidates(String candidates[], boolean showOverlay)
   {
     this.candidates = candidates;
-    invalidate();
     requestLayout();
+    invalidate();
     if (showOverlay && candidates != null && candidates[0] != null && candidates[0].length() > 1)
       im.getKeyboardView().setOverlayWord(candidates[0]);
   }

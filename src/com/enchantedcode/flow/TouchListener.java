@@ -38,9 +38,11 @@ public class TouchListener implements View.OnTouchListener
   private final LinkedList<Point> displayedPoints;
   private final LinkedList<Long> displayedTimes;
   private boolean dragInProgress, shouldInsertSpace, spaceBeforeCandidates, spaceAfterCandidates, candidateIsI, isDeleting;
+  private boolean candidatesAreForTrace, candidatesAreForExistingWord;
   private float lastx, lasty;
   private float minSpeed, maxSpeedSinceMin;
   private int numFinalized, skipCharacters, longPressDelay, backspaceDelay;
+  private int existingWordStartOffset, existingWordEndOffset;
   private long lastTime, startTime;
   private FlowInputMethod inputMethod;
   private KeyboardView.ModifierMode shiftMode, altMode;
@@ -91,6 +93,16 @@ public class TouchListener implements View.OnTouchListener
     return candidates;
   }
 
+  public boolean getCandidatesAreForTrace()
+  {
+    return candidatesAreForTrace;
+  }
+
+  public boolean getCandidatesAreForExistingWord()
+  {
+    return candidatesAreForExistingWord;
+  }
+
   public void setDictionary(Dictionary dictionary)
   {
     this.dictionary = dictionary;
@@ -104,6 +116,8 @@ public class TouchListener implements View.OnTouchListener
     float x = ev.getX();
     float y = ev.getY();
     final long time = ev.getEventTime();
+    candidatesAreForTrace = false;
+    candidatesAreForExistingWord = false;
     if (ev.getAction() == MotionEvent.ACTION_DOWN)
     {
       dragInProgress = true;
@@ -324,10 +338,12 @@ public class TouchListener implements View.OnTouchListener
 
     for (TracePoint point : trace)
     {
+      Collections.sort(point.viaKeyList);
       findKeyDistances(point.keyDistances, point.x, point.y);
       point.viaKeys = point.viaKeyList.toArray(new TracedKey[point.viaKeyList.size()]);
     }
-    candidates = dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode);
+    candidates = dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 5);
+    candidatesAreForTrace = true;
     ensureCandidatesAreUnique();
     spaceBeforeCandidates = false;
     if (inputMethod != null && candidates[0] != null)
@@ -637,6 +653,23 @@ public class TouchListener implements View.OnTouchListener
     InputConnection ic = (inputMethod == null ? null : inputMethod.getCurrentInputConnection());
     if (ic == null)
       return;
+//    int maxSearchDistance = 30;
+//    CharSequence prev = ic.getTextBeforeCursor(maxSearchDistance, 0);
+//    if (prev == null)
+//      return;
+//    for (int i = prev.length()-1; i >= 0; i--)
+//    {
+//      char c = prev.charAt(i);
+//      if (!Character.isLetter(c) && c != '\'')
+//      {
+//        if (i == prev.length()-1)
+//          prev = "";
+//        else
+//          prev = prev.subSequence(i, prev.length());
+//        break;
+//      }
+//    }
+//    Log.d("Flow", "prefix "+prev);
     CharSequence prev;
     int backup = 1;
     while (true)
@@ -698,16 +731,24 @@ public class TouchListener implements View.OnTouchListener
       if (ic != null)
       {
         String text = candidates[index];
-        if (skipCharacters > 0 && skipCharacters <= text.length())
-          text = text.substring(skipCharacters);
-        if (spaceBeforeCandidates && !inputMethod.isSimpleMode() && skipCharacters == 0)
-          text = " "+text;
-        if (confirm && index == 0 && skipCharacters == 0)
-          ic.finishComposingText();
-        else if (confirm)
+        if (candidatesAreForExistingWord)
+        {
+          ic.deleteSurroundingText(existingWordStartOffset, existingWordEndOffset);
           ic.commitText(text, 1);
+        }
         else
-          ic.setComposingText(text, 1);
+        {
+          if (skipCharacters > 0 && skipCharacters <= text.length())
+            text = text.substring(skipCharacters);
+          if (spaceBeforeCandidates && !inputMethod.isSimpleMode() && skipCharacters == 0)
+            text = " "+text;
+          if (confirm && index == 0 && skipCharacters == 0)
+            ic.finishComposingText();
+          else if (confirm)
+            ic.commitText(text, 1);
+          else
+            ic.setComposingText(text, 1);
+        }
         shouldInsertSpace = spaceAfterCandidates;
       }
     }
@@ -716,6 +757,141 @@ public class TouchListener implements View.OnTouchListener
       candidates = null;
       candidatesView.setCandidates(null, false);
     }
+  }
+
+  public void suggestReplacementsForExistingWord()
+  {
+    InputConnection ic = inputMethod.getCurrentInputConnection();
+    if (ic == null || keyboard == null)
+      return;
+
+    // Search backward to the start of the word.
+
+    int maxSearchDistance = 30;
+    CharSequence prev = ic.getTextBeforeCursor(maxSearchDistance, 0);
+    if (prev == null)
+      return;
+    for (int i = prev.length()-1; i >= 0; i--)
+    {
+      char c = prev.charAt(i);
+      if (!Character.isLetter(c) && c != '\'')
+      {
+        if (i == prev.length()-1)
+          prev = "";
+        else
+          prev = prev.subSequence(i+1, prev.length());
+        break;
+      }
+    }
+
+    // Search forward to the end of the word.
+
+    CharSequence next = ic.getTextAfterCursor(maxSearchDistance, 0);
+    if (next == null)
+      return;
+    for (int i = 0; i < next.length(); i++)
+    {
+      char c = next.charAt(i);
+      if (!Character.isLetter(c) && c != '\'')
+      {
+        if (i == 0)
+          next = "";
+        else
+          next = next.subSequence(0, i);
+        break;
+      }
+    }
+    if (prev.length() == maxSearchDistance || next.length() == maxSearchDistance)
+      return;
+    String word = prev.toString()+next.toString();
+    if (word.length() == 0)
+      return;
+    String lowerCaseWord = word.toLowerCase();
+
+    // Create a trace that represents the existing word.
+
+    ArrayList<Integer> keyIndices = new ArrayList<Integer>();
+    ArrayList<TracePoint> trace = new ArrayList<TracePoint>();
+    Point keyPositions[] = keyboardView.getKeyPositions();
+    int slideCharIndex[] = keyboard.slideCharIndex;
+    for (int i = 0; i < lowerCaseWord.length(); i++)
+    {
+      char c = lowerCaseWord.charAt(i);
+      if (c != '\'' && !(c >= 'a' && c <= 'z'))
+      {
+        if (dictionary.replacements.containsKey(c))
+          c = dictionary.replacements.get(c);
+        else
+          c = '\'';
+      }
+      int charIndex = (c == '\'' ? 26 : c-'a');
+      int index = -1;
+      for (int j = 0; j <  slideCharIndex.length && index == -1; j++)
+        if (slideCharIndex[j] == charIndex)
+          index = j;
+      if (index != -1)
+      {
+        keyIndices.add(index);
+        trace.add(new TracePoint(keyPositions[index].x, keyPositions[index].y));
+      }
+    }
+
+    // Add via keys to the trace.
+
+    for (int i = 1; i < trace.size(); i++)
+    {
+      TracePoint point1 = trace.get(i-1);
+      TracePoint point2 = trace.get(i);
+      int index1 = keyIndices.get(i-1);
+      int index2 = keyIndices.get(i);
+      float dirx = point2.x-point1.x;
+      float diry = point2.y-point1.y;
+      float len = FloatMath.sqrt(dirx*dirx+diry*diry);
+      dirx /= len;
+      diry /= len;
+      for (int j = 0; j < keyPositions.length; j++)
+      {
+        if (slideCharIndex[j] == index1 || slideCharIndex[j] == index2)
+          continue;
+        float dx = keyPositions[j].x-point1.x;
+        float dy = keyPositions[j].y-point1.y;
+        float parallelDist = dx*dirx + dy*diry;
+        if (parallelDist < 0 || parallelDist > len)
+          continue;
+        float dxperp = dx - parallelDist*dirx;
+        float dyperp = dy - parallelDist*diry;
+        float perpDist = Math.max(0.0f, FloatMath.sqrt(dxperp*dxperp+dyperp*dyperp)-0.5f);
+        if (perpDist < 0.5f)
+          point2.addViaKey(keyboard.keys[j], perpDist, (long) (parallelDist*1000));
+      }
+    }
+    for (TracePoint point : trace)
+    {
+      Collections.sort(point.viaKeyList);
+      findKeyDistances(point.keyDistances, point.x, point.y);
+      point.viaKeys = point.viaKeyList.toArray(new TracedKey[point.viaKeyList.size()]);
+    }
+
+    // Determine the list of candidates.
+
+    candidates = dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 6);
+    int nextCandidate = 0;
+    for (int i = 0; i < candidates.length; i++)
+    {
+      if (candidates[i] != null && !candidates[i].toLowerCase().equals(lowerCaseWord))
+      {
+        candidates[nextCandidate] = candidates[i];
+        nextCandidate++;
+      }
+    }
+    for (int i = nextCandidate; i < candidates.length; i++)
+      candidates[i] = null;
+    ensureCandidatesAreUnique();
+    candidatesView.setCandidates(candidates, false);
+    candidatesAreForTrace = false;
+    candidatesAreForExistingWord = true;
+    existingWordStartOffset = prev.length();
+    existingWordEndOffset = next.length();
   }
 
   private void updateModifiers()
