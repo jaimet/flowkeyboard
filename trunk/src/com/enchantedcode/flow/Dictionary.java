@@ -68,6 +68,28 @@ public class Dictionary
     }
   };
 
+  private static final Comparator<char[]> wordComparator = new Comparator<char[]>()
+  {
+    public int compare(char[] word1, char[] word2)
+    {
+      int len = Math.min(word1.length, word2.length);
+      for (int i = 0; i < len; i++)
+      {
+        char c1 = Character.toLowerCase(word1[i]);
+        char c2 = Character.toLowerCase(word2[i]);
+        if (c1 < c2)
+          return -1;
+        if (c2 < c1)
+          return 1;
+      }
+      if (word1.length < word2.length)
+        return -1;
+      if (word2.length < word1.length)
+        return 1;
+      return 0;
+    }
+  };
+
   public Dictionary(Context context, String dictionary)
   {
     // Load the dictionary.
@@ -279,6 +301,19 @@ public class Dictionary
     for (int i = 0; i < length; i++)
     {
       if (word[i] != prefix[i])
+        return false;
+    }
+    return true;
+  }
+
+  private static boolean startsWithIgnoreCase(char word[], char prefix[])
+  {
+    int length = prefix.length;
+    if (word.length < length)
+      return false;
+    for (int i = 0; i < length; i++)
+    {
+      if (Character.toLowerCase(word[i]) != Character.toLowerCase(prefix[i]))
         return false;
     }
     return true;
@@ -602,27 +637,18 @@ public class Dictionary
 
   public String[] findWordsStartingWith(String prefix)
   {
-    // Find the trace to use.
+    char prefixChars[] = prefix.toCharArray();
 
-    char trace[] = prefix.toCharArray();
-    for (int i = 0; i < trace.length; i++)
-    {
-      char c = Character.toLowerCase(trace[i]);
-      if (c != '\'' && !(c >= 'a' && c <= 'z') && replacements.containsKey(c))
-        c = replacements.get(c);
-      trace[i] = c;
-    }
+    // Find the first word starting with this prefix.
 
-    // Find the first word starting with this trace.
-
-    int start = Arrays.binarySearch(wordTraces, trace, traceComparator);
+    int start = Arrays.binarySearch(words, prefixChars, wordComparator);
     if (start < 0)
       start = -(start+1);
 
     // Find the last word starting with this trace.
 
     int end = start;
-    for (; end < wordTraces.length && startsWith(wordTraces[end], trace); end++)
+    for (; end < words.length && startsWithIgnoreCase(words[end], prefixChars); end++)
       ;
 
     // Find the most common words starting with this trace.
@@ -689,21 +715,7 @@ public class Dictionary
     {
       char word1[] = word;
       char word2[] = other.word;
-      int len = Math.min(word1.length, word2.length);
-      for (int i = 0; i < len; i++)
-      {
-        char c1 = Character.toLowerCase(word1[i]);
-        char c2 = Character.toLowerCase(word2[i]);
-        if (c1 < c2)
-          return -1;
-        if (c2 < c1)
-          return 1;
-      }
-      if (word1.length < word2.length)
-        return -1;
-      if (word2.length < word1.length)
-        return 1;
-      return 0;
+      return wordComparator.compare(word1, word2);
     }
   }
 
