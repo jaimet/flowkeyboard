@@ -284,11 +284,11 @@ public class Dictionary
     return true;
   }
 
-  public String[] guessWord(TracePoint trace[], KeyboardView.ModifierMode shiftMode)
+  public String[] guessWord(TracePoint trace[], KeyboardView.ModifierMode shiftMode, int numGuesses)
   {
-    int bestWords[] = new int[5];
+    int bestWords[] = new int[numGuesses];
     Arrays.fill(bestWords, -1);
-    float bestScores[] = new float[5];
+    float bestScores[] = new float[numGuesses];
     float sumWeights = 0.0f;
     for (int i = 0; i < trace.length; i++)
       sumWeights += trace[i].weight;
@@ -324,13 +324,13 @@ public class Dictionary
           continue;
         if (trace[0].getKeyDistance(word[0]) > 0.7f)
           continue;
-        float score = scoreWord(word, trace, bestScores[4]);
-        if (score >= bestScores[4])
+        float score = scoreWord(word, trace, bestScores[numGuesses-1]);
+        if (score >= bestScores[numGuesses-1])
           continue;
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < numGuesses; i++)
           if (score < bestScores[i])
           {
-            for (int j = 4; j > i; j--)
+            for (int j = numGuesses-1; j > i; j--)
             {
               bestWords[j] = bestWords[j-1];
               bestScores[j] = bestScores[j-1];
@@ -365,7 +365,7 @@ public class Dictionary
           skipMediumPrefix = false;
           if (mediumPrefix > -1)
           {
-            float cutoff = (bestScores[4] < MEDIUM_PREFIX_CUTOFF ? bestScores[4] :  MEDIUM_PREFIX_CUTOFF);
+            float cutoff = (bestScores[numGuesses-1] < MEDIUM_PREFIX_CUTOFF ? bestScores[numGuesses-1] :  MEDIUM_PREFIX_CUTOFF);
             float score = scorePrefix(mediumPrefixes[mediumPrefix], trace, cutoff);
             if (score > cutoff)
             {
@@ -386,7 +386,7 @@ public class Dictionary
           skipLongPrefix = false;
           if (longPrefix > -1)
           {
-            float cutoff = (bestScores[4] < LONG_PREFIX_CUTOFF ? bestScores[4] :  LONG_PREFIX_CUTOFF);
+            float cutoff = (bestScores[numGuesses-1] < LONG_PREFIX_CUTOFF ? bestScores[numGuesses-1] :  LONG_PREFIX_CUTOFF);
             float score = scorePrefix(longPrefixes[longPrefix], trace, cutoff);
             if (score > cutoff)
             {
@@ -395,13 +395,13 @@ public class Dictionary
             }
           }
         }
-        float score = scoreWord(word, trace, bestScores[4]);
-        if (score >= bestScores[4])
+        float score = scoreWord(word, trace, bestScores[numGuesses-1]);
+        if (score >= bestScores[numGuesses-1])
           continue;
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < numGuesses; i++)
           if (score < bestScores[i])
           {
-            for (int j = 4; j > i; j--)
+            for (int j = numGuesses-1; j > i; j--)
             {
               bestWords[j] = bestWords[j-1];
               bestScores[j] = bestScores[j-1];
