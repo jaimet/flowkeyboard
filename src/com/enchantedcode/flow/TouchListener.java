@@ -30,6 +30,8 @@ import java.util.*;
 
 public class TouchListener implements View.OnTouchListener
 {
+  public enum CandidatesType  {None, Trace, Prefix, LongPress, ExistingWord};
+
   private final KeyboardView keyboardView;
   private final CandidatesView candidatesView;
   private Dictionary dictionary;
@@ -38,7 +40,7 @@ public class TouchListener implements View.OnTouchListener
   private final LinkedList<Point> displayedPoints;
   private final LinkedList<Long> displayedTimes;
   private boolean dragInProgress, shouldInsertSpace, spaceBeforeCandidates, spaceAfterCandidates, candidateIsI, isDeleting;
-  private boolean candidatesAreForTrace, candidatesAreForExistingWord;
+  private CandidatesType candidatesType;
   private float lastx, lasty;
   private float minSpeed, maxSpeedSinceMin;
   private int numFinalized, skipCharacters, longPressDelay, backspaceDelay;
@@ -61,6 +63,7 @@ public class TouchListener implements View.OnTouchListener
     trace =  new ArrayList<TracePoint>();
     displayedPoints = new LinkedList<Point>();
     displayedTimes = new LinkedList<Long>();
+    candidatesType = CandidatesType.None;
   }
 
   public void setInputMethodService(FlowInputMethod inputMethod)
@@ -93,14 +96,15 @@ public class TouchListener implements View.OnTouchListener
     return candidates;
   }
 
-  public boolean getCandidatesAreForTrace()
+  public CandidatesType getCandidatesType()
   {
-    return candidatesAreForTrace;
+    return candidatesType;
   }
 
-  public boolean getCandidatesAreForExistingWord()
+  private void setCandidates(String newCandidates[], CandidatesType newType)
   {
-    return candidatesAreForExistingWord;
+    candidates = newCandidates;
+    candidatesType = newType;
   }
 
   public void setDictionary(Dictionary dictionary)
@@ -116,8 +120,6 @@ public class TouchListener implements View.OnTouchListener
     float x = ev.getX();
     float y = ev.getY();
     final long time = ev.getEventTime();
-    candidatesAreForTrace = false;
-    candidatesAreForExistingWord = false;
     if (ev.getAction() == MotionEvent.ACTION_DOWN)
     {
       dragInProgress = true;
@@ -312,7 +314,7 @@ public class TouchListener implements View.OnTouchListener
       processSingleKey(isLongPress);
       return;
     }
-    if (skipCharacters == 0)
+    if (skipCharacters == 0 && candidatesType != CandidatesType.ExistingWord)
       selectCandidate(0, true);
     candidateIsI = false;
 
@@ -342,8 +344,7 @@ public class TouchListener implements View.OnTouchListener
       findKeyDistances(point.keyDistances, point.x, point.y);
       point.viaKeys = point.viaKeyList.toArray(new TracedKey[point.viaKeyList.size()]);
     }
-    candidates = dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 5);
-    candidatesAreForTrace = true;
+    setCandidates(dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 5), CandidatesType.Trace);
     ensureCandidatesAreUnique();
     spaceBeforeCandidates = false;
     if (inputMethod != null && candidates[0] != null)
@@ -406,8 +407,9 @@ public class TouchListener implements View.OnTouchListener
       if (candidates != null && candidates.length > 1)
         selectCandidate(1, true);
     }
-    if (skipCharacters > 0)
-      candidates = null;
+    boolean showingExistingWordCandidates = (candidatesType == CandidatesType.ExistingWord);
+    if (skipCharacters > 0 || showingExistingWordCandidates)
+      setCandidates(null, CandidatesType.None);
     if (key != KeyboardLayout.DELETE && key != KeyboardLayout.SHIFT && key != KeyboardLayout.ALT)
       selectCandidate(0, true);
     candidateIsI = false;
@@ -421,6 +423,8 @@ public class TouchListener implements View.OnTouchListener
       else
         shiftMode = KeyboardView.ModifierMode.UP;
       keyboardView.setShiftMode(shiftMode);
+      if (showingExistingWordCandidates)
+        suggestReplacementsForExistingWord(); // Update the suggestions to reflect the new shift mode
     }
     else if (key == KeyboardLayout.ALT)
     {
@@ -440,7 +444,7 @@ public class TouchListener implements View.OnTouchListener
         if (candidates != null && ic != null)
         {
           ic.commitText("", 0);
-          candidates = null;
+          setCandidates(null, CandidatesType.None);
           candidatesView.setCandidates(null, false);
         }
         else
@@ -534,7 +538,7 @@ public class TouchListener implements View.OnTouchListener
           ArrayList<String> results = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
           if (results.size() > 0)
           {
-            candidates = new String[] {results.get(0)};
+            setCandidates(new String[] {results.get(0)}, CandidatesType.Trace);
             if (shiftMode == KeyboardView.ModifierMode.DOWN)
             {
               char input[] = candidates[0].toCharArray();
@@ -611,7 +615,7 @@ public class TouchListener implements View.OnTouchListener
               alternates.add(alt[i]);
           if (alternates.size() > 1)
           {
-            candidates = alternates.toArray(new String[alternates.size()]);
+            setCandidates(alternates.toArray(new String[alternates.size()]), CandidatesType.LongPress);
             ensureCandidatesAreUnique();
             candidatesView.setCandidates(candidates, false);
             skipCharacters = 0;
@@ -620,7 +624,7 @@ public class TouchListener implements View.OnTouchListener
         }
         else if (key == 'i' && capitalizeNextI)
         {
-          candidates = new String[] {"I", "i"};
+          setCandidates(new String[] {"I", "i"}, CandidatesType.Prefix);
           candidatesView.setCandidates(candidates, false);
           skipCharacters = 0;
           spaceAfterCandidates = true;
@@ -628,7 +632,7 @@ public class TouchListener implements View.OnTouchListener
         }
         else if (key == 'I' && capitalizeNextI)
         {
-          candidates = new String[] {"I"};
+          setCandidates(new String[] {"I"}, CandidatesType.Prefix);
           skipCharacters = 0;
           spaceAfterCandidates = true;
           candidateIsI = true;
@@ -688,7 +692,7 @@ public class TouchListener implements View.OnTouchListener
     }
     if (prev.length() > 0)
     {
-      candidates = dictionary.findWordsStartingWith(prev.toString());
+      setCandidates(dictionary.findWordsStartingWith(prev.toString()), CandidatesType.Prefix);
       ensureCandidatesAreUnique();
       if (!inputMethod.isPasswordMode())
         candidatesView.setCandidates(candidates, false);
@@ -696,7 +700,7 @@ public class TouchListener implements View.OnTouchListener
     }
     else
     {
-      candidates = null;
+      setCandidates(null, CandidatesType.None);
       candidatesView.setCandidates(null, false);
       skipCharacters = 0;
     }
@@ -731,7 +735,7 @@ public class TouchListener implements View.OnTouchListener
       if (ic != null)
       {
         String text = candidates[index];
-        if (candidatesAreForExistingWord)
+        if (candidatesType == CandidatesType.ExistingWord)
         {
           ic.deleteSurroundingText(existingWordStartOffset, existingWordEndOffset);
           ic.commitText(text, 1);
@@ -754,7 +758,7 @@ public class TouchListener implements View.OnTouchListener
     }
     if (confirm)
     {
-      candidates = null;
+      setCandidates(null, CandidatesType.None);
       candidatesView.setCandidates(null, false);
     }
   }
@@ -874,7 +878,7 @@ public class TouchListener implements View.OnTouchListener
 
     // Determine the list of candidates.
 
-    candidates = dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 6);
+    setCandidates(dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 6), CandidatesType.ExistingWord);
     int nextCandidate = 0;
     for (int i = 0; i < candidates.length; i++)
     {
@@ -888,8 +892,6 @@ public class TouchListener implements View.OnTouchListener
       candidates[i] = null;
     ensureCandidatesAreUnique();
     candidatesView.setCandidates(candidates, false);
-    candidatesAreForTrace = false;
-    candidatesAreForExistingWord = true;
     existingWordStartOffset = prev.length();
     existingWordEndOffset = next.length();
   }
