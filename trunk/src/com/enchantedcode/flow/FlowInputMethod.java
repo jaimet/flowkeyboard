@@ -134,7 +134,18 @@ public class FlowInputMethod extends InputMethodService
   public boolean onEvaluateFullscreenMode()
   {
     WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-    return wm.getDefaultDisplay().getWidth() > wm.getDefaultDisplay().getHeight();
+    int screenWidth = wm.getDefaultDisplay().getWidth();
+    int screenHeight = wm.getDefaultDisplay().getHeight();
+
+    // Find the desired height of the keyboard when the screen is in portrait mode.
+
+    int desiredHeight = KeyboardView.computeHeight(Math.min(screenWidth, screenHeight), Math.max(screenWidth, screenHeight));
+    SharedPreferences preferences = getSharedPreferences("Flow", Context.MODE_PRIVATE);
+    desiredHeight = Math.min(desiredHeight, preferences.getInt("keyboardSize", desiredHeight));
+
+    // Decide whether to use fullscreen mode.
+
+    return desiredHeight > 0.65f*screenHeight;
   }
 
   private void createListener()
