@@ -30,7 +30,7 @@ import java.util.*;
 
 public class TouchListener implements View.OnTouchListener
 {
-  public enum CandidatesType  {None, Trace, Prefix, LongPress, ExistingWord};
+  public enum CandidatesType  {None, Trace, Prefix, PrefixAfterDelete, LongPress, ExistingWord};
 
   private final KeyboardView keyboardView;
   private final CandidatesView candidatesView;
@@ -172,7 +172,7 @@ public class TouchListener implements View.OnTouchListener
     }
     if (ev.getAction() == MotionEvent.ACTION_UP && isDeleting)
     {
-      showCompletionsFromPrefix();
+      showCompletionsFromPrefix(true);
       isDeleting = false;
     }
     if (!dragInProgress)
@@ -225,8 +225,6 @@ public class TouchListener implements View.OnTouchListener
         if (numFinalized == 1)
           updateModifiers();
       }
-
-
     }
     else if (speed < minSpeed)
     {
@@ -462,7 +460,7 @@ public class TouchListener implements View.OnTouchListener
           }
           inputMethod.sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
         }
-        showCompletionsFromPrefix();
+        showCompletionsFromPrefix(true);
       }
       if (longPress)
         isDeleting = true;
@@ -645,7 +643,7 @@ public class TouchListener implements View.OnTouchListener
           if (spaceBeforeCandidates && !inputMethod.isSimpleMode())
             ic.commitText(" ", 1);
           ic.commitText(Character.toString(key), 1);
-          showCompletionsFromPrefix();
+          showCompletionsFromPrefix(false);
         }
         else
           selectCandidate(0, false);
@@ -655,7 +653,7 @@ public class TouchListener implements View.OnTouchListener
     }
   }
 
-  private void showCompletionsFromPrefix()
+  private void showCompletionsFromPrefix(boolean afterDelete)
   {
     InputConnection ic = (inputMethod == null ? null : inputMethod.getCurrentInputConnection());
     if (ic == null)
@@ -695,7 +693,7 @@ public class TouchListener implements View.OnTouchListener
     }
     if (prev.length() > 0)
     {
-      setCandidates(dictionary.findWordsStartingWith(prev.toString()), CandidatesType.Prefix);
+      setCandidates(dictionary.findWordsStartingWith(prev.toString()), afterDelete ? CandidatesType.PrefixAfterDelete : CandidatesType.Prefix);
       ensureCandidatesAreUnique();
       if (!inputMethod.isPasswordMode())
         candidatesView.setCandidates(candidates, false);
