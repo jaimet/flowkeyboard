@@ -593,7 +593,7 @@ public class TouchListener implements View.OnTouchListener
           spaceBeforeCandidates = true;
           capitalizeNextI = true;
         }
-        else if (prev.length() == 0 || Character.isSpace(prev.charAt(0)))
+        else if (prev.length() == 0 || Character.isSpace(prev.charAt(0)) || prev.charAt(0) == '(')
           capitalizeNextI = true;
         else if (Character.isLetter(key) && (prev.charAt(0) == '.' || prev.charAt(0) == ',' || prev.charAt(0) == '?' || prev.charAt(0) == '!') && !inputMethod.isSimpleMode())
         {

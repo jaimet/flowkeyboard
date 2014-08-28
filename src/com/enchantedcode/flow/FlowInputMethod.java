@@ -171,8 +171,10 @@ public class FlowInputMethod extends InputMethodService
   public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd)
   {
     super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd);
+    if (touchListener == null)
+      return;
     TouchListener.CandidatesType candidatesType = touchListener.getCandidatesType();
-    boolean jumped = (newSelStart != oldSelStart+1 && candidatesType != TouchListener.CandidatesType.Trace);
+    boolean jumped = (newSelStart != oldSelStart && newSelStart != oldSelStart+1 && candidatesType != TouchListener.CandidatesType.Trace);
     selectionStart = newSelStart;
     selectionEnd = newSelEnd;
     updateShiftMode();
