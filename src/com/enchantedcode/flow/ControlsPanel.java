@@ -42,6 +42,8 @@ public class ControlsPanel extends View
   @Override
   public boolean onTouchEvent(MotionEvent event)
   {
+    if (leftBounds == null)
+      return true; // onDraw() hasn't been called yet
     float x = event.getX();
     float y = event.getY();
     if (event.getAction() == MotionEvent.ACTION_DOWN)
