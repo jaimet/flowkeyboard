@@ -840,6 +840,8 @@ public class TouchListener implements View.OnTouchListener
         trace.add(new TracePoint(keyPositions[index].x, keyPositions[index].y));
       }
     }
+    if (trace.size() == 0)
+      return;
 
     // Add via keys to the trace.
 
