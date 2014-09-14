@@ -380,6 +380,8 @@ public class Dictionary
     int lastLongPrefix = -1;
     boolean skipMediumPrefix = false;
     boolean skipLongPrefix = false;
+    float mediumPrefixCutoff = MEDIUM_PREFIX_CUTOFF;
+    float longPrefixCutoff = LONG_PREFIX_CUTOFF;
     for (SortedPrefix prefix : candidatePrefixes)
     {
       Prefix p = prefix.prefix;
@@ -400,13 +402,14 @@ public class Dictionary
           skipMediumPrefix = false;
           if (mediumPrefix > -1)
           {
-            float cutoff = (bestScores[numGuesses-1] < MEDIUM_PREFIX_CUTOFF ? bestScores[numGuesses-1] :  MEDIUM_PREFIX_CUTOFF);
-            float score = scorePrefix(mediumPrefixes[mediumPrefix], trace, cutoff);
-            if (score > cutoff)
+            float score = scorePrefix(mediumPrefixes[mediumPrefix], trace, mediumPrefixCutoff);
+            if (score > mediumPrefixCutoff)
             {
               skipMediumPrefix = true;
               continue;
             }
+            if (score+2.0f < mediumPrefixCutoff)
+              mediumPrefixCutoff = score+2.0f;
           }
         }
         int longPrefix = longPrefixIndex[k];
@@ -421,13 +424,14 @@ public class Dictionary
           skipLongPrefix = false;
           if (longPrefix > -1)
           {
-            float cutoff = (bestScores[numGuesses-1] < LONG_PREFIX_CUTOFF ? bestScores[numGuesses-1] :  LONG_PREFIX_CUTOFF);
-            float score = scorePrefix(longPrefixes[longPrefix], trace, cutoff);
-            if (score > cutoff)
+            float score = scorePrefix(longPrefixes[longPrefix], trace, longPrefixCutoff);
+            if (score > longPrefixCutoff)
             {
               skipLongPrefix = true;
               continue;
             }
+            if (score+2.0f < longPrefixCutoff)
+              longPrefixCutoff = score+2.0f;
           }
         }
         float score = scoreWord(word, trace, bestScores[numGuesses-1]);
@@ -443,6 +447,10 @@ public class Dictionary
             }
             bestWords[i] = k;
             bestScores[i] = score;
+            if (bestScores[numGuesses-1] < mediumPrefixCutoff)
+              mediumPrefixCutoff = bestScores[numGuesses-1];
+            if (bestScores[numGuesses-1] < longPrefixCutoff)
+              longPrefixCutoff = bestScores[numGuesses-1];
             break;
           }
       }
@@ -492,7 +500,7 @@ public class Dictionary
   private static float scorePrefix(char word[], TracePoint trace[], float cutoff)
   {
     int minTrace = (word.length-1)/2;
-    int maxTrace = Math.min(trace.length, word.length*2);
+    int maxTrace = Math.min(trace.length, (int) Math.ceil(word.length*1.25));
     TracePoint first = trace[0];
     cutoff -= first.getKeyDistance(word[0])*first.weight;
     float bestScore = cutoff+0.01f;
@@ -566,31 +574,34 @@ public class Dictionary
   private static float scorePrefixSegment(char word[], TracePoint trace[], int wordStart, int wordEnd, int traceEnd, int lastCharacterToScore)
   {
     float score = 0.0f;
-    char cprev = word[wordStart];
     char c = word[wordEnd];
     int end = Math.min(wordEnd, lastCharacterToScore);
     if (traceEnd == 0)
       score += end;
-    else
+    else if (wordStart < end)
     {
+      char cprev = word[wordStart];
       TracePoint point = trace[traceEnd-1];
       int lastIndex = -1;
       for (int currentChar = wordStart+1; currentChar < end; currentChar++)
       {
         char cvia = word[currentChar];
-        int index = point.getViaKeyIndex(cvia);
-        if (cvia != c && cvia != cprev)
+        if (cvia != cprev)
         {
-          if (index == -1)
+          int index = point.getViaKeyIndex(cvia);
+          if (cvia != c)
           {
-            score += MISSING_VIA_LETTER;
-            continue;
+            if (index == -1)
+            {
+              score += MISSING_VIA_LETTER;
+              continue;
+            }
+            score += VIA_DISTANCE_MULTIPLIER*point.viaKeys[index].nearestDistance;
+            if (index < lastIndex)
+              score += UNORDERED_VIA_COST;
           }
-          score += VIA_DISTANCE_MULTIPLIER*point.viaKeys[index].nearestDistance;
-          if (index < lastIndex)
-            score += UNORDERED_VIA_COST;
+          lastIndex = index;
         }
-        lastIndex = index;
       }
     }
     if (wordEnd <= lastCharacterToScore)
@@ -604,30 +615,33 @@ public class Dictionary
   private static float scoreSegment(char word[], TracePoint trace[], int wordStart, int wordEnd, int traceEnd)
   {
     float score = 0.0f;
-    char cprev = word[wordStart];
     char c = word[wordEnd];
     if (traceEnd == 0)
       score += wordEnd;
-    else
+    else if (wordStart < wordEnd)
     {
+      char cprev = word[wordStart];
       TracePoint point = trace[traceEnd-1];
       int lastIndex = -1;
       for (int currentChar = wordStart+1; currentChar < wordEnd; currentChar++)
       {
         char cvia = word[currentChar];
-        int index = point.getViaKeyIndex(cvia);
-        if (cvia != c && cvia != cprev)
+        if (cvia != cprev)
         {
-          if (index == -1)
+          int index = point.getViaKeyIndex(cvia);
+          if (cvia != c)
           {
-            score += MISSING_VIA_LETTER;
-            continue;
+            if (index == -1)
+            {
+              score += MISSING_VIA_LETTER;
+              continue;
+            }
+            score += VIA_DISTANCE_MULTIPLIER*point.viaKeys[index].nearestDistance;
+            if (index < lastIndex)
+              score += UNORDERED_VIA_COST;
           }
-          score += VIA_DISTANCE_MULTIPLIER*point.viaKeys[index].nearestDistance;
-          if (index < lastIndex)
-            score += UNORDERED_VIA_COST;
+          lastIndex = index;
         }
-        lastIndex = index;
       }
     }
     TracePoint point = trace[traceEnd];
