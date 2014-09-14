@@ -174,7 +174,7 @@ public class KeyboardView extends View
     SharedPreferences preferences = getContext().getSharedPreferences("Flow", Context.MODE_PRIVATE);
     height = Math.min(height, preferences.getInt("keyboardSize", height));
     setMeasuredDimension(width, height);
-    if (getMeasuredWidth() > 0 && getMeasuredHeight() > 0)
+    if (getMeasuredWidth() > 0 && getMeasuredHeight() > 0 && needToCreateBackground)
       createBackground(getMeasuredWidth(), getMeasuredHeight());
   }
 
