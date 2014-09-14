@@ -343,7 +343,7 @@ public class TouchListener implements View.OnTouchListener
     {
       Collections.sort(point.viaKeyList);
       findKeyDistances(point.keyDistances, point.x, point.y);
-      point.viaKeys = point.viaKeyList.toArray(new TracedKey[point.viaKeyList.size()]);
+      point.finalizeViaKeys();
     }
     setCandidates(dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 5), CandidatesType.Trace);
     ensureCandidatesAreUnique();
@@ -876,7 +876,7 @@ public class TouchListener implements View.OnTouchListener
     {
       Collections.sort(point.viaKeyList);
       findKeyDistances(point.keyDistances, point.x, point.y);
-      point.viaKeys = point.viaKeyList.toArray(new TracedKey[point.viaKeyList.size()]);
+      point.finalizeViaKeys();
     }
 
     // Determine the list of candidates.
