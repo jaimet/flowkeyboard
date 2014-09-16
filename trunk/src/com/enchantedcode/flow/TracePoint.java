@@ -33,7 +33,7 @@ public class TracePoint
     this.y = y;
     viaKeyList = new ArrayList<TracedKey>();
     keyDistances = new float[27];
-    viaKeyIndices = new int[27];
+    viaKeyIndices = new int[26];
     Arrays.fill(keyDistances, Float.MAX_VALUE);
     Arrays.fill(viaKeyIndices, -1);
     weight = 1.0f;
@@ -67,9 +67,7 @@ public class TracePoint
     viaKeys = viaKeyList.toArray(new TracedKey[viaKeyList.size()]);
     for (int i = 0; i < viaKeys.length; i++)
     {
-      if (viaKeys[i].key == '\'')
-        viaKeyIndices[26] = i;
-      else
+      if (viaKeys[i].key >= 'a' && viaKeys[i].key <= 'z')
         viaKeyIndices[viaKeys[i].key-'a'] = i;
     }
   }
@@ -83,10 +81,13 @@ public class TracePoint
 
   public int getViaKeyIndex(char key)
   {
-    if (key == '\'')
-      return viaKeyIndices[26];
-    return viaKeyIndices[key-'a'];
-  }
+    if (key >= 'a' && key <= 'z')
+      return viaKeyIndices[key-'a'];
+    TracedKey localViaKeys[] = viaKeys;
+    for (int i = localViaKeys.length-1; i >= 0; i--)
+      if (localViaKeys[i].key == key)
+        return i;
+    return -1;   }
 
   public void mergePoint(TracePoint point)
   {
