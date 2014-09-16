@@ -33,7 +33,7 @@ public class KeyboardView extends View
   private final KeyboardLayout baseKeyboard, shiftKeyboard, altKeyboard, altShiftKeyboard;
   private KeyboardLayout currentKeyboard, secondaryKeyboard;
   private Point keyPositions[];
-  private int spacing, lastWidth, lastHeight;
+  private int spacing, lastWidth, lastHeight, lastPosition;
   private ArrayList<Point> markers;
   private List<Point> trace;
   private ModifierMode shiftMode, altMode;
@@ -173,8 +173,9 @@ public class KeyboardView extends View
     height = computeHeight(width, height);
     SharedPreferences preferences = getContext().getSharedPreferences("Flow", Context.MODE_PRIVATE);
     height = Math.min(height, preferences.getInt("keyboardSize", height));
+    int position = Math.min(height, preferences.getInt("keyboardPosition", 1));
     setMeasuredDimension(width, height);
-    if (getMeasuredWidth() > 0 && getMeasuredHeight() > 0 && (needToCreateBackground || width != lastWidth || height != lastHeight))
+    if (getMeasuredWidth() > 0 && getMeasuredHeight() > 0 && (needToCreateBackground || width != lastWidth || height != lastHeight || position != lastPosition))
       createBackground(getMeasuredWidth(), getMeasuredHeight());
   }
 
@@ -371,6 +372,7 @@ public class KeyboardView extends View
     needToCreateBackground = false;
     lastWidth = width;
     lastHeight = height;
+    lastPosition = keyboardPosition;
   }
 
   public void setMarkers(ArrayList<Point> markers)
