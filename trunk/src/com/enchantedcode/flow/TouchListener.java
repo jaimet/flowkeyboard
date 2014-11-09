@@ -468,7 +468,8 @@ public class TouchListener implements View.OnTouchListener
     }
     else if (key == KeyboardLayout.ENTER)
     {
-      if (inputMethod != null)
+      boolean result = inputMethod.sendDefaultEditorAction(true);
+      if (!result && inputMethod != null)
         inputMethod.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
     }
     else if (key == '.' && longPress && !inputMethod.isSimpleModePermanent())
