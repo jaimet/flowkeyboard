@@ -215,7 +215,7 @@ public class Dictionary
           {
             if (replacements.containsKey(c))
               c = replacements.get(c);
-            else
+            if (c != '\'' && !(c >= 'a' && c <= 'z'))
               c = '\'';
           }
           trace[j] = c;
