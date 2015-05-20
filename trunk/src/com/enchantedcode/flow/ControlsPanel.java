@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,12 +94,16 @@ public class ControlsPanel extends View
       else if (pasteBounds.contains(x, y))
         ic.performContextMenuAction(android.R.id.paste);
       if (repeatKey != -1) {
+        if (repeatKey == KeyEvent.KEYCODE_DPAD_LEFT || repeatKey == KeyEvent.KEYCODE_DPAD_RIGHT || repeatKey == KeyEvent.KEYCODE_DPAD_UP || repeatKey == KeyEvent.KEYCODE_DPAD_DOWN)
+          im.setPressedArrowKey();
         im.sendDownUpKeyEvents(repeatKey);
         handler.postDelayed(new Runnable() {
           public void run()
           {
             if (repeatKey != -1)
             {
+              if (repeatKey == KeyEvent.KEYCODE_DPAD_LEFT || repeatKey == KeyEvent.KEYCODE_DPAD_RIGHT || repeatKey == KeyEvent.KEYCODE_DPAD_UP || repeatKey == KeyEvent.KEYCODE_DPAD_DOWN)
+                im.setPressedArrowKey();
               im.sendDownUpKeyEvents(repeatKey);
               handler.postDelayed(this, im.getTouchListener().getBackspaceDelay());
             }

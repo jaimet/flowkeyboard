@@ -87,7 +87,8 @@ public class TracePoint
     for (int i = localViaKeys.length-1; i >= 0; i--)
       if (localViaKeys[i].key == key)
         return i;
-    return -1;   }
+    return -1;
+  }
 
   public void mergePoint(TracePoint point)
   {
