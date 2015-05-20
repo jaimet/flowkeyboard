@@ -197,7 +197,7 @@ public class KeyboardView extends View
 
   public void createBackground(int width, int height)
   {
-    spacing = (int) Math.min(width/7, height/5.2f);
+    spacing = (int) Math.min(width/7, height/5.3f);
     float density = getResources().getDisplayMetrics().density;
     createPaths();
     Path path = new Path();
@@ -210,7 +210,7 @@ public class KeyboardView extends View
       xoffset = (width-6*spacing)/2;
     else
       xoffset = (int) (width-6.5*spacing);
-    int yoffset = (int) (height-4.2f*spacing)/2;
+    int yoffset = (int) (height-4.3f*spacing)/2;
     float radius = 0.47f*spacing;
     Bitmap background = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     Canvas canvas = new Canvas(background);
