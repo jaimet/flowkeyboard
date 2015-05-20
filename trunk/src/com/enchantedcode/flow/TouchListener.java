@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ public class TouchListener implements View.OnTouchListener
   private final ArrayList<TracePoint> trace;
   private final LinkedList<Point> displayedPoints;
   private final LinkedList<Long> displayedTimes;
-  private boolean dragInProgress, shouldInsertSpace, spaceBeforeCandidates, spaceAfterCandidates, candidateIsI, isDeleting;
+  private boolean dragInProgress, shouldInsertSpace, spaceBeforeCandidates, spaceAfterCandidates, candidateIsI, isDeleting, selectionEndsWithSpace;
   private CandidatesType candidatesType;
   private float lastx, lasty;
   private float minSpeed, maxSpeedSinceMin;
@@ -101,10 +101,18 @@ public class TouchListener implements View.OnTouchListener
     return candidatesType;
   }
 
-  private void setCandidates(String newCandidates[], CandidatesType newType)
+  public void setCandidates(String newCandidates[], CandidatesType newType)
   {
     candidates = newCandidates;
     candidatesType = newType;
+    selectionEndsWithSpace = false;
+    InputConnection ic = inputMethod.getCurrentInputConnection();
+    if (ic != null)
+    {
+      CharSequence selected = ic.getSelectedText(0);
+      if (selected != null && selected.toString().endsWith(" "))
+        selectionEndsWithSpace = true;
+    }
   }
 
   public void setDictionary(Dictionary dictionary)
@@ -748,6 +756,8 @@ public class TouchListener implements View.OnTouchListener
             text = text.substring(skipCharacters);
           if (spaceBeforeCandidates && !inputMethod.isSimpleMode() && skipCharacters == 0)
             text = " "+text;
+          if (selectionEndsWithSpace)
+            text = text+" "; // Double-tap selects a word plus the following space.  We want to preserve that space.
           if (confirm && index == 0 && skipCharacters == 0)
             ic.finishComposingText();
           else if (confirm)
