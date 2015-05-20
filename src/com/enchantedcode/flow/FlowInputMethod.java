@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ public class FlowInputMethod extends InputMethodService
   private ControlsToggle toggle;
   private ControlsPanel controlsPanel;
   private View extractView;
-  private boolean simpleMode, temporarySimpleMode, passwordMode;
+  private boolean simpleMode, temporarySimpleMode, passwordMode, pressedArrowKey;
   private int selectionStart, selectionEnd;
 
   @Override
@@ -180,7 +180,13 @@ public class FlowInputMethod extends InputMethodService
     updateShiftMode();
     if (candidatesEnd != -1 && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd))
       touchListener.selectCandidate(0, true);
-    if (candidatesEnd == -1 && (candidatesType != TouchListener.CandidatesType.PrefixAfterDelete || newSelStart != oldSelStart-1) && (touchListener.getCandidates() == null || candidatesType == TouchListener.CandidatesType.ExistingWord || jumped))
+    if (pressedArrowKey)
+    {
+      touchListener.setCandidates(null, TouchListener.CandidatesType.None);
+      candidatesView.setCandidates(null, false);
+      pressedArrowKey = false;
+    }
+    else if (candidatesEnd == -1 && (candidatesType != TouchListener.CandidatesType.PrefixAfterDelete || newSelStart != oldSelStart-1) && (touchListener.getCandidates() == null || candidatesType == TouchListener.CandidatesType.ExistingWord || jumped))
       touchListener.suggestReplacementsForExistingWord();
   }
 
@@ -264,6 +270,11 @@ public class FlowInputMethod extends InputMethodService
       }
       keyboardView.setShiftMode(capitalize ? KeyboardView.ModifierMode.DOWN : KeyboardView.ModifierMode.UP);
     }
+  }
+  
+  public void setPressedArrowKey()
+  {
+    pressedArrowKey = true;
   }
 
   public void rebuildDictionary()
