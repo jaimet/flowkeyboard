@@ -777,6 +777,7 @@ public class TouchListener implements View.OnTouchListener
 
   public void suggestReplacementsForExistingWord()
   {
+    shiftMode = keyboardView.getShiftMode();
     InputConnection ic = inputMethod.getCurrentInputConnection();
     if (ic == null || keyboard == null || isDeleting)
       return;
@@ -896,7 +897,7 @@ public class TouchListener implements View.OnTouchListener
     int nextCandidate = 0;
     for (int i = 0; i < candidates.length; i++)
     {
-      if (candidates[i] != null && !candidates[i].toLowerCase().equals(lowerCaseWord))
+      if (candidates[i] != null && !candidates[i].equals(word))
       {
         candidates[nextCandidate] = candidates[i];
         nextCandidate++;
