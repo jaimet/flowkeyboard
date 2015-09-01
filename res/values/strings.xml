@@ -7,6 +7,8 @@
     <string name="voiceNotSupported">This device does not support voice input.</string>
     <string name="voiceNetworkError">Voice input requires a network connection.</string>
     <string name="voiceError">An error occurred using voice input.</string>
+    <string name="addWord">Add Word</string>
+    <string name="confirmAddWord">Add the word \"%s\" to the user dictionary?</string>
     <string name="dictionary">Dictionary</string>
     <string name="dictionaryDescription">Select the spelling dictionary to use</string>
     <string name="preferences">Preferences</string>
