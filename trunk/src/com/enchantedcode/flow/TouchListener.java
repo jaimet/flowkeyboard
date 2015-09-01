@@ -498,7 +498,7 @@ public class TouchListener implements View.OnTouchListener
         builder.setTitle(R.string.voiceInput);
         builder.setMessage(R.string.voiceNotSupported);
         builder.setIcon(android.R.drawable.ic_dialog_alert);
-        showDialog(builder.create());
+        inputMethod.showDialog(builder.create());
       }
       final ProgressDialog dlg = new ProgressDialog(candidatesView.getContext());
       final SpeechRecognizer recognizer = SpeechRecognizer.createSpeechRecognizer(inputMethod);
@@ -540,7 +540,7 @@ public class TouchListener implements View.OnTouchListener
             builder.setMessage(R.string.voiceNetworkError);
           else
             builder.setMessage(R.string.voiceError);
-          showDialog(builder.create());
+          inputMethod.showDialog(builder.create());
         }
         public void onResults(Bundle bundle)
         {
@@ -585,7 +585,7 @@ public class TouchListener implements View.OnTouchListener
       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
       intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "com.enchantedcode.flow");
-      showDialog(dlg);
+      inputMethod.showDialog(dlg);
       recognizer.startListening(intent);
     }
     else
@@ -661,48 +661,69 @@ public class TouchListener implements View.OnTouchListener
       updateModifiers();
     }
   }
-
-  private void showCompletionsFromPrefix(boolean afterDelete)
+  
+  private String getPrefixBeforeCursor()
   {
     InputConnection ic = (inputMethod == null ? null : inputMethod.getCurrentInputConnection());
     if (ic == null)
-      return;
-//    int maxSearchDistance = 30;
-//    CharSequence prev = ic.getTextBeforeCursor(maxSearchDistance, 0);
-//    if (prev == null)
-//      return;
-//    for (int i = prev.length()-1; i >= 0; i--)
-//    {
-//      char c = prev.charAt(i);
-//      if (!Character.isLetter(c) && c != '\'')
-//      {
-//        if (i == prev.length()-1)
-//          prev = "";
-//        else
-//          prev = prev.subSequence(i, prev.length());
-//        break;
-//      }
-//    }
-//    Log.d("Flow", "prefix "+prev);
-    CharSequence prev;
-    int backup = 1;
-    while (true)
+      return null;
+    int maxSearchDistance = 30;
+    CharSequence prev = ic.getTextBeforeCursor(maxSearchDistance, 0);
+    if (prev == null)
+      return null;
+    for (int i = prev.length()-1; i >= 0; i--)
     {
-      prev = ic.getTextBeforeCursor(backup, 0);
-      if (prev == null)
-        prev = "";
-      if (prev.length() < backup)
-        break;
-      if (!Character.isLetter(prev.charAt(0)))
+      char c = prev.charAt(i);
+      if (!Character.isLetter(c) && c != '\'')
       {
-        prev = prev.subSequence(1, prev.length());
+        if (i == prev.length()-1)
+          prev = "";
+        else
+          prev = prev.subSequence(i+1, prev.length());
         break;
       }
-      backup++;
     }
-    if (prev.length() > 0)
+    if (prev.length() == maxSearchDistance)
+      return null;
+    return prev.toString();
+  }
+  
+  private String getSuffixAfterCursor()
+  {
+    InputConnection ic = (inputMethod == null ? null : inputMethod.getCurrentInputConnection());
+    if (ic == null)
+      return null;
+    int maxSearchDistance = 30;
+    CharSequence next = ic.getTextAfterCursor(maxSearchDistance, 0);
+    if (next == null)
+      return null;
+    for (int i = 0; i < next.length(); i++)
     {
-      setCandidates(dictionary.findWordsStartingWith(prev.toString()), afterDelete ? CandidatesType.PrefixAfterDelete : CandidatesType.Prefix);
+      char c = next.charAt(i);
+      if (!Character.isLetter(c) && c != '\'')
+      {
+        if (i == 0)
+          next = "";
+        else
+          next = next.subSequence(0, i);
+        break;
+      }
+    }
+    if (next.length() == maxSearchDistance)
+      return null;
+    return next.toString();
+  }
+
+  private void showCompletionsFromPrefix(boolean afterDelete)
+  {
+    updateAddWordButton();
+    InputConnection ic = (inputMethod == null ? null : inputMethod.getCurrentInputConnection());
+    if (ic == null)
+      return;
+    String prev = getPrefixBeforeCursor();
+    if (prev != null && prev.length() > 0)
+    {
+      setCandidates(dictionary.findWordsStartingWith(prev), afterDelete ? CandidatesType.PrefixAfterDelete : CandidatesType.Prefix);
       ensureCandidatesAreUnique();
       if (!inputMethod.isPasswordMode())
         candidatesView.setCandidates(candidates, false);
@@ -777,50 +798,16 @@ public class TouchListener implements View.OnTouchListener
 
   public void suggestReplacementsForExistingWord()
   {
+    updateAddWordButton();
     shiftMode = keyboardView.getShiftMode();
     InputConnection ic = inputMethod.getCurrentInputConnection();
     if (ic == null || keyboard == null || isDeleting)
       return;
-
-    // Search backward to the start of the word.
-
-    int maxSearchDistance = 30;
-    CharSequence prev = ic.getTextBeforeCursor(maxSearchDistance, 0);
-    if (prev == null)
+    String prev = getPrefixBeforeCursor();
+    String next = getSuffixAfterCursor();
+    if (prev == null || next == null)
       return;
-    for (int i = prev.length()-1; i >= 0; i--)
-    {
-      char c = prev.charAt(i);
-      if (!Character.isLetter(c) && c != '\'')
-      {
-        if (i == prev.length()-1)
-          prev = "";
-        else
-          prev = prev.subSequence(i+1, prev.length());
-        break;
-      }
-    }
-
-    // Search forward to the end of the word.
-
-    CharSequence next = ic.getTextAfterCursor(maxSearchDistance, 0);
-    if (next == null)
-      return;
-    for (int i = 0; i < next.length(); i++)
-    {
-      char c = next.charAt(i);
-      if (!Character.isLetter(c) && c != '\'')
-      {
-        if (i == 0)
-          next = "";
-        else
-          next = next.subSequence(0, i);
-        break;
-      }
-    }
-    if (prev.length() == maxSearchDistance || next.length() == maxSearchDistance)
-      return;
-    String word = prev.toString()+next.toString();
+    String word = prev+next;
     if (word.length() == 0)
       return;
     String lowerCaseWord = word.toLowerCase();
@@ -911,22 +898,32 @@ public class TouchListener implements View.OnTouchListener
     existingWordEndOffset = next.length();
   }
 
+  private void updateAddWordButton()
+  {
+    String prev = getPrefixBeforeCursor();
+    String next = getSuffixAfterCursor();
+    boolean shouldEnable = false;
+    String word = null;
+    if (prev != null && next != null)
+    {
+      word = prev+next;
+      if (word.length() > 0)
+      {
+        String lowerCaseWord = word.toLowerCase();
+        shouldEnable = true;
+        for (String candidate : dictionary.findWordsStartingWith(word))
+          if (candidate != null && candidate.toLowerCase().equals(lowerCaseWord))
+            shouldEnable = false;
+      }
+    }
+    inputMethod.getAddWordButton().setWord(shouldEnable ? word : null);
+  }
+  
   private void updateModifiers()
   {
     if (shiftMode == KeyboardView.ModifierMode.DOWN)
       keyboardView.setShiftMode(KeyboardView.ModifierMode.UP);
     if (altMode == KeyboardView.ModifierMode.DOWN)
       keyboardView.setAltMode(KeyboardView.ModifierMode.UP);
-  }
-
-  private void showDialog(Dialog dlg)
-  {
-    Window window = dlg.getWindow();
-    WindowManager.LayoutParams lp = window.getAttributes();
-    lp.token = candidatesView.getWindowToken();
-    lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
-    window.setAttributes(lp);
-    window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-    dlg.show();
   }
 }

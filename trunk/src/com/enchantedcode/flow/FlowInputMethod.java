@@ -17,6 +17,7 @@ package com.enchantedcode.flow;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import android.app.*;
 import android.content.*;
 import android.database.*;
 import android.inputmethodservice.*;
@@ -37,6 +38,7 @@ public class FlowInputMethod extends InputMethodService
   private TouchListener touchListener;
   private ControlsToggle toggle;
   private ControlsPanel controlsPanel;
+  private AddWordButton addWordButton;
   private View extractView;
   private boolean simpleMode, temporarySimpleMode, passwordMode, pressedArrowKey;
   private int selectionStart, selectionEnd;
@@ -65,6 +67,7 @@ public class FlowInputMethod extends InputMethodService
     candidatesView = new CandidatesView(this);
     toggle = new ControlsToggle(this);
     controlsPanel = new ControlsPanel(this);
+    addWordButton = new AddWordButton(this);
     createListener();
 
     // Create the scroller for the candidates view.
@@ -81,6 +84,7 @@ public class FlowInputMethod extends InputMethodService
     LinearLayout row = new LinearLayout(this);
     row.addView(toggle);
     row.addView(scroll);
+    row.addView(addWordButton);
     LinearLayout column = new LinearLayout(this);
     column.setOrientation(LinearLayout.VERTICAL);
     column.addView(row);
@@ -217,6 +221,11 @@ public class FlowInputMethod extends InputMethodService
     return toggle;
   }
 
+  public AddWordButton getAddWordButton()
+  {
+    return addWordButton;
+  }
+
   public boolean isSimpleMode()
   {
     return simpleMode || temporarySimpleMode;
@@ -288,5 +297,16 @@ public class FlowInputMethod extends InputMethodService
       dictionary = new Dictionary(FlowInputMethod.this, lastDictionaryName);
       touchListener.setDictionary(dictionary);
     }
+  }
+
+  public void showDialog(Dialog dlg)
+  {
+    Window window = dlg.getWindow();
+    WindowManager.LayoutParams lp = window.getAttributes();
+    lp.token = candidatesView.getWindowToken();
+    lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
+    window.setAttributes(lp);
+    window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+    dlg.show();
   }
 }
