@@ -19,11 +19,10 @@ package com.enchantedcode.flow;
 
 import android.app.*;
 import android.content.*;
-import android.content.res.*;
 import android.graphics.*;
 import android.provider.*;
-import android.util.*;
 import android.view.*;
+import android.widget.*;
 
 public class AddWordButton extends View
 {
@@ -61,8 +60,10 @@ public class AddWordButton extends View
       @Override
       public void onClick(DialogInterface dialog, int which)
       {
-        dialog.dismiss();
-        UserDictionary.Words.addWord(im, word, 250, UserDictionary.Words.LOCALE_TYPE_ALL);
+        if (word.equals(word.toLowerCase()))
+          addWordToDictionary(word);
+        else
+          confirmCapitalization();
       }
     });
     builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
@@ -70,11 +71,35 @@ public class AddWordButton extends View
       @Override
       public void onClick(DialogInterface dialog, int which)
       {
-        dialog.dismiss();
       }
     });
     im.showDialog(builder.create());
     return true;
+  }
+  
+  private void confirmCapitalization()
+  {
+    AlertDialog.Builder builder = new AlertDialog.Builder(im);
+    String message = String.format(getResources().getString(R.string.confirmCapitalization), word);
+    builder.setTitle(message);
+    builder.setItems(new String[] {word, word.toLowerCase()}, new DialogInterface.OnClickListener()
+    {
+      @Override
+      public void onClick(DialogInterface dialog, int which)
+      {
+        addWordToDictionary(which == 0 ? word : word.toLowerCase());
+      }
+    });
+    im.showDialog(builder.create());
+  }
+  
+  private void addWordToDictionary(String wordToAdd)
+  {
+    UserDictionary.Words.addWord(im, wordToAdd, 250, UserDictionary.Words.LOCALE_TYPE_ALL);
+    String message = String.format(getResources().getString(R.string.wordAdded), wordToAdd);
+    Toast toast = Toast.makeText(im, message, Toast.LENGTH_SHORT);
+    toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+    toast.show();
   }
 
   @Override
