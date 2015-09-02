@@ -9,6 +9,8 @@
     <string name="voiceError">An error occurred using voice input.</string>
     <string name="addWord">Add Word</string>
     <string name="confirmAddWord">Add the word \"%s\" to the user dictionary?</string>
+    <string name="wordAdded">\"%s\" added to dictionary</string>
+    <string name="confirmCapitalization">How should it be capitalized in the dictionary?</string>
     <string name="dictionary">Dictionary</string>
     <string name="dictionaryDescription">Select the spelling dictionary to use</string>
     <string name="preferences">Preferences</string>

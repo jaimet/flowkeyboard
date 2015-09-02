@@ -904,10 +904,10 @@ public class TouchListener implements View.OnTouchListener
     String next = getSuffixAfterCursor();
     boolean shouldEnable = false;
     String word = null;
-    if (prev != null && next != null)
+    if (prev != null && next != null && !inputMethod.isPasswordMode())
     {
       word = prev+next;
-      if (word.length() > 0)
+      if (word.length() > 1)
       {
         String lowerCaseWord = word.toLowerCase();
         shouldEnable = true;
