@@ -100,6 +100,7 @@ public class AddWordButton extends View
     Toast toast = Toast.makeText(im, message, Toast.LENGTH_SHORT);
     toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
     toast.show();
+    setWord(null);
   }
 
   @Override
