@@ -26,6 +26,7 @@ public class Flow
   public static final char SHIFT = 2;
   public static final char ALT = 3;
   public static final char VOICE = 4;
+  public static final char FORWARD_DELETE = 5;
   public static final char keys[] =
       {'?', 'x', 'w', 'v', 'y', 'b', DELETE,
        ',', 't', 'h', 'e', 'r', 'm', ' ',
@@ -39,10 +40,10 @@ public class Flow
        ALT, 'K', 'S', 'N', 'U', 'D', 'J',
        SHIFT, 'Z', '\'', 'G', 'F', 'Q', ENTER};
   public static final char altKeys[] =
-      {'!', '@', '(', ')', '%', '^', DELETE,
-       ',', ':', '1', '2', '3', '/', '$',
+      {'!', '@', '(', ')', '%', FORWARD_DELETE, DELETE,
+       ',', ':', '1', '2', '3', '/', ' ',
        '.', ';', '4', '5', '6', '+', '&',
-       ALT, '~', '7', '8', '9', '-', VOICE,
+       ALT, '$', '7', '8', '9', '-', VOICE,
        SHIFT, '=', '"', '0', '#', '*', ENTER};
   public static final KeyboardLayout baseKeyboard = new KeyboardLayout(keys);
   public static final KeyboardLayout shiftKeyboard = new KeyboardLayout(shiftKeys);
@@ -79,13 +80,13 @@ public class Flow
     alternates.put('$', new String[] {"€", "£", "¢", "¥"});
     alternates.put('+', new String[] {"±"});
     alternates.put('-', new String[] {"–", "_"});
-    alternates.put('*', new String[] {"°", "‡", "†"});
+    alternates.put('*', new String[] {"°", "^", "‡", "†"});
     alternates.put('/', new String[] {"\\", "|", "÷"});
     alternates.put('(', new String[] {"<", "[", "{", "≤", "«", " :-("});
     alternates.put(')', new String[] {">", "]", "}", "≥", "»", " :-)"});
     alternates.put('!', new String[] {"¡"});
     alternates.put('?', new String[] {"¿"});
-    alternates.put('=', new String[] {"≠", "≈"});
+    alternates.put('=', new String[] {"≠", "≈", "~"});
     alternates.put('.', new String[] {"…"});
     alternates.put(';', new String[] {" ;-)"});
   }

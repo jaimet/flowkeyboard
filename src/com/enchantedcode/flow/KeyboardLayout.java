@@ -26,6 +26,7 @@ public class KeyboardLayout
   public static final char SHIFT = 2;
   public static final char ALT = 3;
   public static final char VOICE = 4;
+  public static final char FORWARD_DELETE = 5;
 
   public static enum KeyType {VOWEL, CONSONANT, NUMBER, PUNCTUATION, CONTROL}
   public final char keys[];
