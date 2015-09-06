@@ -474,6 +474,15 @@ public class TouchListener implements View.OnTouchListener
         isDeleting = true;
       shouldInsertSpace = false;
     }
+    else if (key == KeyboardLayout.FORWARD_DELETE)
+    {
+      if (inputMethod != null)
+      {
+        inputMethod.sendDownUpKeyEvents(KeyEvent.KEYCODE_FORWARD_DEL);
+        setCandidates(null, CandidatesType.None);
+        candidatesView.setCandidates(null, false);
+      }
+    }
     else if (key == KeyboardLayout.ENTER)
     {
       boolean result = inputMethod.sendDefaultEditorAction(true);

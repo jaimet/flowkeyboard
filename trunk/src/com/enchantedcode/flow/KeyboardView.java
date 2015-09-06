@@ -37,7 +37,7 @@ public class KeyboardView extends View
   private ArrayList<Point> markers;
   private List<Point> trace;
   private ModifierMode shiftMode, altMode;
-  private Path spacePath, enterPath, deletePath, shiftPath, voicePath1, voicePath2, autoPath;
+  private Path spacePath, enterPath, deletePath, forwardDeletePath, shiftPath, voicePath1, voicePath2, autoPath;
   private Bitmap overlay;
   private long overlayStartTime;
   private final Handler handler;
@@ -263,6 +263,11 @@ public class KeyboardView extends View
           deletePath.offset(x, y+0.35f*textSize, path);
           canvas.drawPath(path, pathPaint);
         }
+        else if (key == KeyboardLayout.FORWARD_DELETE)
+        {
+          forwardDeletePath.offset(x, y+0.35f*textSize, path);
+          canvas.drawPath(path, pathPaint);
+        }
         else if (key == KeyboardLayout.SHIFT)
         {
           shiftPath.offset(x, y+0.4f*textSize, path);
@@ -329,6 +334,16 @@ public class KeyboardView extends View
             canvas.drawPath(path, pathPaint);
             voicePath2.transform(m, path);
             pathPaint.setStyle(Paint.Style.STROKE);
+            pathPaint.setStrokeWidth(1.5f*density);
+            canvas.drawPath(path, pathPaint);
+            pathPaint.setStrokeWidth(2*density);
+          }
+          else if (altkey == KeyboardLayout.FORWARD_DELETE)
+          {
+            Matrix m = new Matrix();
+            m.postScale(0.55f, 0.55f);
+            m.postTranslate(x+0.5f*textSize, y-0.1f*textSize);
+            forwardDeletePath.transform(m, path);
             pathPaint.setStrokeWidth(1.5f*density);
             canvas.drawPath(path, pathPaint);
             pathPaint.setStrokeWidth(2*density);
@@ -466,7 +481,15 @@ public class KeyboardView extends View
     deletePath.lineTo(0.75f*deleteWidth, -0.3f*deleteHeight);
     deletePath.moveTo(0.75f*deleteWidth, -0.7f*deleteHeight);
     deletePath.lineTo(-0.25f*deleteWidth, -0.3f*deleteHeight);
-
+    
+    forwardDeletePath = new Path(deletePath);
+    Matrix m = new Matrix();
+    m.setTranslate(0, deleteHeight/2);
+    m.postRotate(180);
+    m.postScale(0.6f, 0.8f);
+    m.postTranslate(0, -0.4f*deleteHeight);
+    forwardDeletePath.transform(m);
+    
     shiftPath = new Path();
     float shiftTop = -spacing*0.35f;
     float shiftOuterWidth = spacing/5.0f;
