@@ -46,7 +46,7 @@ public class KeyboardView extends View
   private static final int vowelColor = Color.rgb(190, 255, 190);
   private static final int consonantColor = Color.rgb(190, 210, 255);
   private static final int punctuationColor = Color.rgb(200, 200, 200);
-  private static final int numberColor = Color.rgb(255, 220, 200);
+  private static final int numberColor = Color.rgb(255, 255, 255);
   private static final int controlColor = Color.rgb(255, 255, 190);
 
   public enum ModifierMode {UP, DOWN, LOCKED}
@@ -199,6 +199,7 @@ public class KeyboardView extends View
   {
     spacing = (int) Math.min(width/7, height/5.3f);
     float density = getResources().getDisplayMetrics().density;
+    int altColor = Color.rgb(80, 80, 80);
     createPaths();
     Path path = new Path();
     SharedPreferences preferences = getContext().getSharedPreferences("Flow", Context.MODE_PRIVATE);
@@ -308,6 +309,7 @@ public class KeyboardView extends View
         }
         else if (key > 32)
         {
+          textPaint.setColor(Color.BLACK);
           textPaint.setTextSize(textSize);
           canvas.drawText(String.valueOf(key), x-0.1f*textSize, y+0.5f*textSize, textPaint);
         }
@@ -321,8 +323,10 @@ public class KeyboardView extends View
             m.postTranslate(x+0.5f*textSize, y-0.05f*textSize);
             spacePath.transform(m, path);
             pathPaint.setStrokeWidth(1.5f*density);
+            pathPaint.setColor(altColor);
             canvas.drawPath(path, pathPaint);
             pathPaint.setStrokeWidth(2*density);
+            pathPaint.setColor(Color.BLACK);
           }
           else if (altkey == KeyboardLayout.VOICE)
           {
@@ -331,22 +335,26 @@ public class KeyboardView extends View
             m.postTranslate(x+0.5f*textSize, y-0.05f*textSize);
             voicePath1.transform(m, path);
             pathPaint.setStyle(Paint.Style.FILL);
+            pathPaint.setColor(altColor);
             canvas.drawPath(path, pathPaint);
             voicePath2.transform(m, path);
             pathPaint.setStyle(Paint.Style.STROKE);
             pathPaint.setStrokeWidth(1.5f*density);
             canvas.drawPath(path, pathPaint);
             pathPaint.setStrokeWidth(2*density);
+            pathPaint.setColor(Color.BLACK);
           }
           else if (altkey == KeyboardLayout.FORWARD_DELETE)
           {
             Matrix m = new Matrix();
             m.postScale(0.55f, 0.55f);
-            m.postTranslate(x+0.5f*textSize, y-0.1f*textSize);
+            m.postTranslate(x+0.5f*textSize, y-0.15f*textSize);
             forwardDeletePath.transform(m, path);
-            pathPaint.setStrokeWidth(1.5f*density);
+            pathPaint.setStrokeWidth(1.0f*density);
+            pathPaint.setColor(altColor);
             canvas.drawPath(path, pathPaint);
             pathPaint.setStrokeWidth(2*density);
+            pathPaint.setColor(Color.BLACK);
           }
           else if (altkey == '.')
           {
@@ -371,7 +379,6 @@ public class KeyboardView extends View
                 Typeface t = textPaint.getTypeface();
                 textPaint.setTypeface(Typeface.create(t, Typeface.BOLD));
                 canvas.drawText("AUTO", x+0.25f*textSize, y-0.05f*textSize, textPaint);
-                textPaint.setColor(Color.BLACK);
                 textPaint.setTypeface(t);
               }
             }
@@ -379,7 +386,8 @@ public class KeyboardView extends View
           else if (altkey > 32)
           {
             textPaint.setTextSize(0.55f*textSize);
-            canvas.drawText(String.valueOf(altkey), x+0.5f*textSize, y-0.05f*textSize, textPaint);
+            textPaint.setColor(altColor);
+            canvas.drawText(String.valueOf(altkey), x+0.5f*textSize, y-0.1f*textSize, textPaint);
           }
         }
       }
