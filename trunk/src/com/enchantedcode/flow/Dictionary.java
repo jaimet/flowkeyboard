@@ -321,9 +321,10 @@ public class Dictionary
 
   public String[] guessWord(TracePoint trace[], KeyboardView.ModifierMode shiftMode, int numGuesses)
   {
-    int bestWords[] = new int[numGuesses];
+    int numCandidates = numGuesses*2;
+    int bestWords[] = new int[numCandidates];
     Arrays.fill(bestWords, -1);
-    float bestScores[] = new float[numGuesses];
+    float bestScores[] = new float[numCandidates];
     float sumWeights = 0.0f;
     for (int i = 0; i < trace.length; i++)
       sumWeights += trace[i].weight;
@@ -359,13 +360,13 @@ public class Dictionary
           continue;
         if (trace[0].getKeyDistance(word[0]) > 0.7f)
           continue;
-        float score = scoreWord(word, trace, bestScores[numGuesses-1]);
-        if (score >= bestScores[numGuesses-1])
+        float score = scoreWord(word, trace, bestScores[numCandidates-1]);
+        if (score >= bestScores[numCandidates-1])
           continue;
-        for (int i = 0; i < numGuesses; i++)
+        for (int i = 0; i < numCandidates; i++)
           if (score < bestScores[i])
           {
-            for (int j = numGuesses-1; j > i; j--)
+            for (int j = numCandidates-1; j > i; j--)
             {
               bestWords[j] = bestWords[j-1];
               bestScores[j] = bestScores[j-1];
@@ -434,23 +435,23 @@ public class Dictionary
               longPrefixCutoff = score+2.0f;
           }
         }
-        float score = scoreWord(word, trace, bestScores[numGuesses-1]);
-        if (score >= bestScores[numGuesses-1])
+        float score = scoreWord(word, trace, bestScores[numCandidates-1]);
+        if (score >= bestScores[numCandidates-1])
           continue;
-        for (int i = 0; i < numGuesses; i++)
+        for (int i = 0; i < numCandidates; i++)
           if (score < bestScores[i])
           {
-            for (int j = numGuesses-1; j > i; j--)
+            for (int j = numCandidates-1; j > i; j--)
             {
               bestWords[j] = bestWords[j-1];
               bestScores[j] = bestScores[j-1];
             }
             bestWords[i] = k;
             bestScores[i] = score;
-            if (bestScores[numGuesses-1] < mediumPrefixCutoff)
-              mediumPrefixCutoff = bestScores[numGuesses-1];
-            if (bestScores[numGuesses-1] < longPrefixCutoff)
-              longPrefixCutoff = bestScores[numGuesses-1];
+            if (bestScores[numCandidates-1] < mediumPrefixCutoff)
+              mediumPrefixCutoff = bestScores[numCandidates-1];
+            if (bestScores[numCandidates-1] < longPrefixCutoff)
+              longPrefixCutoff = bestScores[numCandidates-1];
             break;
           }
       }
@@ -459,7 +460,7 @@ public class Dictionary
     for (int i = 0; i < bestScores.length; i++)
     {
       if (bestWords[i] > -1)
-        adjustedScores[i] = bestScores[i]-0.0015f*wordFrequency[bestWords[i]];
+        adjustedScores[i] = bestScores[i]-0.0025f*wordFrequency[bestWords[i]];
       else
         adjustedScores[i] = Float.MAX_VALUE;
     }
@@ -476,8 +477,8 @@ public class Dictionary
         bestScores[j+1] = swapScore;
         adjustedScores[j+1] = swapAdjusted;
       }
-    String choices[] = new String[bestWords.length];
-    for (int i = 0; i < bestWords.length; i++)
+    String choices[] = new String[numGuesses];
+    for (int i = 0; i < numGuesses; i++)
       if (bestWords[i] != -1)
       {
         char word[] = words[bestWords[i]];
