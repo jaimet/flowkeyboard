@@ -39,7 +39,7 @@ public class TouchListener implements View.OnTouchListener
   private final ArrayList<TracePoint> trace;
   private final LinkedList<Point> displayedPoints;
   private final LinkedList<Long> displayedTimes;
-  private boolean dragInProgress, shouldInsertSpace, spaceBeforeCandidates, spaceAfterCandidates, candidateIsI, isDeleting, selectionEndsWithSpace;
+  private boolean dragInProgress, shouldInsertSpace, spaceBeforeCandidates, spaceAfterCandidates, candidateIsI, isDeleting, selectionEndsWithSpace, isCancelableLongPress;
   private CandidatesType candidatesType;
   private float lastx, lasty;
   private float minSpeed, maxSpeedSinceMin;
@@ -132,6 +132,7 @@ public class TouchListener implements View.OnTouchListener
     {
       dragInProgress = true;
       isDeleting = false;
+      isCancelableLongPress = false;
       lastx = x;
       lasty = y;
       startTime = lastTime = time;
@@ -182,6 +183,27 @@ public class TouchListener implements View.OnTouchListener
     {
       showCompletionsFromPrefix(true);
       isDeleting = false;
+    }
+    if (isCancelableLongPress && ev.getAction() == MotionEvent.ACTION_MOVE && inputMethod != null)
+    {
+      TracePoint first = trace.get(0);
+      float dist2 = (first.x-x)*(first.x-x) + (first.y-y)*(first.y-y);
+      if (dist2 > 0.25f*keyboardView.getKeySpacing()*keyboardView.getKeySpacing())
+      {
+        // We previously interpreted this as a long press, but the user has now moved further,
+        // so probably they didn't really mean it to be a long press.  Cancel it and go back
+        // to processing the drag.
+        
+        dragInProgress = true;
+        isCancelableLongPress = false;
+        InputConnection ic = inputMethod.getCurrentInputConnection();
+        if (ic != null)
+        {
+          ic.commitText("", 0);
+          setCandidates(null, CandidatesType.None);
+          candidatesView.setCandidates(null, false);
+        }
+      }
     }
     if (!dragInProgress)
       return true;
@@ -639,6 +661,7 @@ public class TouchListener implements View.OnTouchListener
             candidatesView.setCandidates(candidates, false);
             skipCharacters = 0;
             spaceAfterCandidates = false;
+            isCancelableLongPress = true;
           }
         }
         else if (key == 'i' && capitalizeNextI)
