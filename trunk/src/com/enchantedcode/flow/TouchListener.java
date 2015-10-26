@@ -398,7 +398,7 @@ public class TouchListener implements View.OnTouchListener
             if (prev2.length() == 2 && !Character.isWhitespace(prev2.charAt(0)))
               spaceBeforeCandidates = true;
           }
-          else if (!(Character.isSpace(prevChar) || prevChar == '+' || prevChar == '-' || prevChar == '(' || prevChar == '/' || prevChar == '\\' || prevChar == '@'))
+          else if (!(Character.isSpace(prevChar) || prevChar == '+' || prevChar == '-' || prevChar == '(' || prevChar == '/' || prevChar == '\\' || prevChar == '@' || prevChar == '¡' || prevChar == '¿'))
             spaceBeforeCandidates = true;
         }
       }
