@@ -269,9 +269,9 @@ public class FlowInputMethod extends InputMethodService
       for (int i = before.length()-1; i >= 0; i--)
       {
         char c = before.charAt(i);
-        if (c == '.' || c == '!' || c == '?')
+        if (c == '.' || c == '!' || c == '?' || c == '¡' || c == '¿')
           break;
-        if (!Character.isSpace(c))
+        if (!Character.isSpace(c) && c != '\"' && c != '\'')
         {
           capitalize = false;
           break;
