@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,12 @@ public class KeyboardLayout
   public static enum KeyType {VOWEL, CONSONANT, NUMBER, PUNCTUATION, CONTROL}
   public final char keys[];
   public final KeyType keyType[];
-  public final int keyCode[];
   public final int slideCharIndex[];
 
   public KeyboardLayout(char keys[])
   {
     this.keys = keys;
     keyType = new KeyType[keys.length];
-    keyCode = new int[keys.length];
     slideCharIndex = new int[keys.length];
     Arrays.fill(slideCharIndex, -1);
     for (int i = 0; i < keys.length; i++)

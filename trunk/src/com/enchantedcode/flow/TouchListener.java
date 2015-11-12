@@ -48,7 +48,6 @@ public class TouchListener implements View.OnTouchListener
   private long lastTime, startTime;
   private FlowInputMethod inputMethod;
   private KeyboardView.ModifierMode shiftMode, altMode;
-  private KeyboardLayout keyboard, secondaryKeyboard;
   private String candidates[];
 
   private static final char traceableKeys[] = "abcdefghijklmnopqrstuvwxyz\'".toCharArray();
@@ -139,8 +138,6 @@ public class TouchListener implements View.OnTouchListener
       numFinalized = 0;
       shiftMode = keyboardView.getShiftMode();
       altMode = keyboardView.getAltMode();
-      keyboard = keyboardView.getKeyboard();
-      secondaryKeyboard = keyboardView.getSecondaryKeyboard();
       trace.clear();
       displayedPoints.clear();
       displayedTimes.clear();
@@ -219,7 +216,7 @@ public class TouchListener implements View.OnTouchListener
     TracePoint previous = (trace.size() == 1 ? current : trace.get(trace.size()-2));
     float scale = 1.0f/(keyboardView.getKeySpacing()*keyboardView.getKeySpacing());
     float distances2[] = new float[27];
-    findKeyDistances(distances2, x, y);
+    findKeyDistances(keyboardView.getKeyboard(), distances2, x, y);
     if (minSpeed < 0.5f*maxSpeedSinceMin && speed < 0.5f*maxSpeedSinceMin)
     {
       previous = current;
@@ -292,7 +289,7 @@ public class TouchListener implements View.OnTouchListener
     return true;
   }
 
-  private void findKeyDistances(float allDistances[], float x, float y)
+  private void findKeyDistances(KeyboardLayout keyboard, float allDistances[], float x, float y)
   {
     Point keyPositions[] = keyboardView.getKeyPositions();
     Arrays.fill(allDistances, Float.MAX_VALUE);
@@ -372,7 +369,7 @@ public class TouchListener implements View.OnTouchListener
     for (TracePoint point : trace)
     {
       Collections.sort(point.viaKeyList);
-      findKeyDistances(point.keyDistances, point.x, point.y);
+      findKeyDistances(keyboardView.getKeyboard(), point.keyDistances, point.x, point.y);
       point.finalizeViaKeys();
     }
     setCandidates(dictionary.guessWord(trace.toArray(new TracePoint[trace.size()]), shiftMode, 5), CandidatesType.Trace);
@@ -429,7 +426,7 @@ public class TouchListener implements View.OnTouchListener
     }
     if (nearestDistance > keyboardView.getKeySpacing())
       return;
-    char key = (longPress ? secondaryKeyboard : keyboard).keys[nearest];
+    char key = (longPress ? keyboardView.getSecondaryKeyboard() : keyboardView.getKeyboard()).keys[nearest];
     if (candidateIsI && Character.isLetter(key))
     {
       // They previously typed an i or I.  We now see that was the start of a word, not the word "I".
@@ -646,11 +643,11 @@ public class TouchListener implements View.OnTouchListener
         {
           ArrayList<String> alternates = new ArrayList<String>();
           alternates.add(Character.toString(key));
-          String alt[] = Flow.alternates.get(keyboard.keys[nearest]);
+          String alt[] = Flow.alternates.get(keyboardView.getKeyboard().keys[nearest]);
           if (alt != null)
             for (int i = 0; i < alt.length; i++)
               alternates.add(alt[i]);
-          alt = Flow.alternates.get(secondaryKeyboard.keys[nearest]);
+          alt = Flow.alternates.get(keyboardView.getSecondaryKeyboard().keys[nearest]);
           if (alt != null)
             for (int i = 0; i < alt.length; i++)
               alternates.add(alt[i]);
@@ -833,7 +830,7 @@ public class TouchListener implements View.OnTouchListener
     updateAddWordButton();
     shiftMode = keyboardView.getShiftMode();
     InputConnection ic = inputMethod.getCurrentInputConnection();
-    if (ic == null || keyboard == null || isDeleting)
+    if (ic == null || isDeleting)
       return;
     String prev = getPrefixBeforeCursor();
     String next = getSuffixAfterCursor();
@@ -846,10 +843,11 @@ public class TouchListener implements View.OnTouchListener
 
     // Create a trace that represents the existing word.
 
+    KeyboardLayout baseKeyboard = keyboardView.getBaseKeyboard();
     ArrayList<Integer> keyIndices = new ArrayList<Integer>();
     ArrayList<TracePoint> trace = new ArrayList<TracePoint>();
     Point keyPositions[] = keyboardView.getKeyPositions();
-    int slideCharIndex[] = keyboard.slideCharIndex;
+    int slideCharIndex[] = baseKeyboard.slideCharIndex;
     for (int i = 0; i < lowerCaseWord.length(); i++)
     {
       char c = lowerCaseWord.charAt(i);
@@ -900,13 +898,13 @@ public class TouchListener implements View.OnTouchListener
         float dyperp = dy - parallelDist*diry;
         float perpDist = Math.max(0.0f, FloatMath.sqrt(dxperp*dxperp+dyperp*dyperp)-0.5f);
         if (perpDist < 0.5f)
-          point2.addViaKey(keyboard.keys[j], perpDist, (long) (parallelDist*1000));
+          point2.addViaKey(baseKeyboard.keys[j], perpDist, (long) (parallelDist*1000));
       }
     }
     for (TracePoint point : trace)
     {
       Collections.sort(point.viaKeyList);
-      findKeyDistances(point.keyDistances, point.x, point.y);
+      findKeyDistances(baseKeyboard, point.keyDistances, point.x, point.y);
       point.finalizeViaKeys();
     }
 
