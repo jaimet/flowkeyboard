@@ -74,6 +74,11 @@ public class KeyboardView extends View
   {
     return currentKeyboard;
   }
+  
+  public KeyboardLayout getBaseKeyboard()
+  {
+    return baseKeyboard;
+  }
 
   public KeyboardLayout getSecondaryKeyboard()
   {
