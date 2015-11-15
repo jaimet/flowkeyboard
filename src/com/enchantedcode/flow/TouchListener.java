@@ -426,7 +426,7 @@ public class TouchListener implements View.OnTouchListener
     }
     if (nearestDistance > keyboardView.getKeySpacing())
       return;
-    char key = (longPress ? keyboardView.getSecondaryKeyboard() : keyboardView.getKeyboard()).keys[nearest];
+    int key = (longPress ? keyboardView.getSecondaryKeyboard() : keyboardView.getKeyboard()).keys[nearest];
     if (candidateIsI && Character.isLetter(key))
     {
       // They previously typed an i or I.  We now see that was the start of a word, not the word "I".
@@ -444,7 +444,9 @@ public class TouchListener implements View.OnTouchListener
     InputConnection ic = (inputMethod == null ? null : inputMethod.getCurrentInputConnection());
     if (key == KeyboardLayout.SHIFT)
     {
-      if (shiftMode == KeyboardView.ModifierMode.UP)
+      if (longPress)
+          shiftMode = KeyboardView.ModifierMode.EMOJI;
+      else if (shiftMode == KeyboardView.ModifierMode.UP)
         shiftMode = KeyboardView.ModifierMode.DOWN;
       else if (shiftMode == KeyboardView.ModifierMode.DOWN)
         shiftMode = KeyboardView.ModifierMode.LOCKED;
@@ -642,7 +644,7 @@ public class TouchListener implements View.OnTouchListener
         if (longPress)
         {
           ArrayList<String> alternates = new ArrayList<String>();
-          alternates.add(Character.toString(key));
+          alternates.add(new String(Character.toChars(key)));
           String alt[] = Flow.alternates.get(keyboardView.getKeyboard().keys[nearest]);
           if (alt != null)
             for (int i = 0; i < alt.length; i++)
@@ -680,7 +682,7 @@ public class TouchListener implements View.OnTouchListener
         {
           if (spaceBeforeCandidates && !inputMethod.isSimpleMode())
             ic.commitText(" ", 1);
-          ic.commitText(Character.toString(key), 1);
+          ic.commitText(new String(Character.toChars(key)), 1);
           showCompletionsFromPrefix(false);
         }
         else
@@ -850,7 +852,7 @@ public class TouchListener implements View.OnTouchListener
     int slideCharIndex[] = baseKeyboard.slideCharIndex;
     for (int i = 0; i < lowerCaseWord.length(); i++)
     {
-      char c = lowerCaseWord.charAt(i);
+      int c = lowerCaseWord.charAt(i);
       if (c != '\'' && !(c >= 'a' && c <= 'z'))
       {
         if (dictionary.replacements.containsKey(c))

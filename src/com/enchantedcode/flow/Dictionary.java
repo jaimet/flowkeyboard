@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ public class Dictionary
   final int mediumPrefixIndex[];
   final char longPrefixes[][];
   final int longPrefixIndex[];
-  final HashMap<Character, Character> replacements = new HashMap<Character, Character>();
+  final HashMap<Integer, Integer> replacements = new HashMap<Integer, Integer>();
 
   private static final float PREFIX_CUTOFF = 3.0f;
   private static final float MEDIUM_PREFIX_CUTOFF = 3.5f;
@@ -95,10 +95,10 @@ public class Dictionary
     // Load the dictionary.
 
     ArrayList<SortedWord> wordList = new ArrayList<SortedWord>();
-    for (HashMap.Entry<Character, String[]> entry : Flow.alternates.entrySet())
+    for (HashMap.Entry<Integer, String[]> entry : Flow.alternates.entrySet())
       for (String c : entry.getValue())
         if (c.length() == 1)
-          replacements.put(c.charAt(0), entry.getKey());
+          replacements.put(c.codePointAt(0), entry.getKey());
     try
     {
       int id = R.raw.american;
@@ -210,7 +210,7 @@ public class Dictionary
         char trace[] = new char[length];
         for (j = 0; j < length; j++)
         {
-          char c = Character.toLowerCase(word[j]);
+          int c = Character.toLowerCase(word[j]);
           if (c != '\'' && !(c >= 'a' && c <= 'z'))
           {
             if (replacements.containsKey(c))
@@ -218,7 +218,7 @@ public class Dictionary
             if (c != '\'' && !(c >= 'a' && c <= 'z'))
               c = '\'';
           }
-          trace[j] = c;
+          trace[j] = (char) c;
         }
         wordTraces[i] = trace;
       }

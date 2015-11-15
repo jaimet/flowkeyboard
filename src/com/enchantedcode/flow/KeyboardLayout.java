@@ -21,19 +21,19 @@ import java.util.Arrays;
 
 public class KeyboardLayout
 {
-  public static final char ENTER = 0;
-  public static final char DELETE = 1;
-  public static final char SHIFT = 2;
-  public static final char ALT = 3;
-  public static final char VOICE = 4;
-  public static final char FORWARD_DELETE = 5;
+  public static final int ENTER = 0;
+  public static final int DELETE = 1;
+  public static final int SHIFT = 2;
+  public static final int ALT = 3;
+  public static final int VOICE = 4;
+  public static final int FORWARD_DELETE = 5;
 
-  public static enum KeyType {VOWEL, CONSONANT, NUMBER, PUNCTUATION, CONTROL}
-  public final char keys[];
+  public static enum KeyType {VOWEL, CONSONANT, NUMBER, PUNCTUATION, CONTROL, EMOJI}
+  public final int keys[];
   public final KeyType keyType[];
   public final int slideCharIndex[];
 
-  public KeyboardLayout(char keys[])
+  public KeyboardLayout(int keys[])
   {
     this.keys = keys;
     keyType = new KeyType[keys.length];
@@ -41,8 +41,8 @@ public class KeyboardLayout
     Arrays.fill(slideCharIndex, -1);
     for (int i = 0; i < keys.length; i++)
     {
-      char key = keys[i];
-      char lowerCase = Character.toLowerCase(key);
+      int key = keys[i];
+      int lowerCase = Character.toLowerCase(key);
       if (key < 32)
         keyType[i] = KeyType.CONTROL;
       else if (Character.isDigit(key))
@@ -51,6 +51,8 @@ public class KeyboardLayout
         keyType[i] = KeyType.VOWEL;
       else if (Character.isLetter(key))
         keyType[i] = KeyType.CONSONANT;
+      else if (key > 0x2000)
+        keyType[i] = KeyType.EMOJI;
       else
         keyType[i] = KeyType.PUNCTUATION;
       if (key == '\'')
