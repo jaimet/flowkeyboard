@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ public class KeyboardView extends View
 {
   private boolean needToCreateBackground;
   private final FlowInputMethod inputMethod;
-  private final KeyboardLayout baseKeyboard, shiftKeyboard, altKeyboard, altShiftKeyboard;
+  private final KeyboardLayout baseKeyboard, shiftKeyboard, altKeyboard, altShiftKeyboard, emojiKeyboard;
   private KeyboardLayout currentKeyboard, secondaryKeyboard;
   private Point keyPositions[];
   private int spacing, lastWidth, lastHeight, lastPosition;
@@ -48,12 +48,13 @@ public class KeyboardView extends View
   private static final int punctuationColor = Color.rgb(200, 200, 200);
   private static final int numberColor = Color.rgb(255, 255, 255);
   private static final int controlColor = Color.rgb(255, 255, 190);
+  private static final int emojiColor = Color.rgb(255, 255, 255);
 
-  public enum ModifierMode {UP, DOWN, LOCKED}
+  public enum ModifierMode {UP, DOWN, LOCKED, EMOJI}
   public static final String AUTO = "AUTO";
   public static final String NO_AUTO = "NO_AUTO";
 
-  public KeyboardView(Context context, KeyboardLayout baseKeyboard, KeyboardLayout shiftKeyboard, KeyboardLayout altKeyboard, KeyboardLayout altShiftKeyboard)
+  public KeyboardView(Context context, KeyboardLayout baseKeyboard, KeyboardLayout shiftKeyboard, KeyboardLayout altKeyboard, KeyboardLayout altShiftKeyboard, KeyboardLayout emojiKeyboard)
   {
     super(context);
     inputMethod = (context instanceof FlowInputMethod ? (FlowInputMethod) context : null);
@@ -61,6 +62,7 @@ public class KeyboardView extends View
     this.shiftKeyboard = shiftKeyboard;
     this.altKeyboard = altKeyboard;
     this.altShiftKeyboard = altShiftKeyboard;
+    this.emojiKeyboard = emojiKeyboard;
     currentKeyboard = baseKeyboard;
     secondaryKeyboard = altKeyboard;
     keyPositions = new Point[baseKeyboard.keys.length];
@@ -127,7 +129,12 @@ public class KeyboardView extends View
   {
     boolean shift = (shiftMode != ModifierMode.UP);
     boolean alt = (altMode != ModifierMode.UP);
-    if (shift && alt)
+    if (shiftMode == ModifierMode.EMOJI)
+    {
+      currentKeyboard = emojiKeyboard;
+      secondaryKeyboard = emojiKeyboard;
+    }
+    else if (shift && alt)
     {
       currentKeyboard = altShiftKeyboard;
       secondaryKeyboard = shiftKeyboard;
@@ -242,7 +249,7 @@ public class KeyboardView extends View
         int y = height-((4-i)*spacing+yoffset);
         keyPositions[index] = new Point(x, y);
         KeyboardLayout.KeyType type = currentKeyboard.keyType[index];
-        char key = currentKeyboard.keys[index];
+        int key = currentKeyboard.keys[index];
         if (type == KeyboardLayout.KeyType.CONTROL)
           keyPaint.setColor(controlColor);
         else if (type == KeyboardLayout.KeyType.NUMBER)
@@ -251,6 +258,8 @@ public class KeyboardView extends View
           keyPaint.setColor(vowelColor);
         else if (type == KeyboardLayout.KeyType.CONSONANT)
           keyPaint.setColor(consonantColor);
+        else if (type == KeyboardLayout.KeyType.EMOJI)
+          keyPaint.setColor(emojiColor);
         else
           keyPaint.setColor(punctuationColor);
         canvas.drawCircle(x, y, radius, keyPaint);
@@ -316,9 +325,12 @@ public class KeyboardView extends View
         {
           textPaint.setColor(Color.BLACK);
           textPaint.setTextSize(textSize);
-          canvas.drawText(String.valueOf(key), x-0.1f*textSize, y+0.5f*textSize, textPaint);
+          if (type == KeyboardLayout.KeyType.EMOJI)
+            canvas.drawText(new String(Character.toChars(key)), x, y+0.35f*textSize, textPaint);
+          else
+            canvas.drawText(new String(Character.toChars(key)), x-0.1f*textSize, y+0.5f*textSize, textPaint);
         }
-        char altkey = secondaryKeyboard.keys[index];
+        int altkey = secondaryKeyboard.keys[index];
         if (altkey != key || key == '.')
         {
           if (altkey == ' ')
@@ -392,7 +404,7 @@ public class KeyboardView extends View
           {
             textPaint.setTextSize(0.55f*textSize);
             textPaint.setColor(altColor);
-            canvas.drawText(String.valueOf(altkey), x+0.5f*textSize, y-0.1f*textSize, textPaint);
+            canvas.drawText(new String(Character.toChars(altkey)), x+0.5f*textSize, y-0.1f*textSize, textPaint);
           }
         }
       }

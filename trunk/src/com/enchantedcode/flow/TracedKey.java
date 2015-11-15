@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@ package com.enchantedcode.flow;
 
 public class TracedKey implements Comparable<TracedKey>
 {
-  public char key;
+  public int key;
   public float nearestDistance;
   public long nearestTime;
 
-  public TracedKey(char key, float initialDistance, long initialTime)
+  public TracedKey(int key, float initialDistance, long initialTime)
   {
     this.key = key;
     nearestDistance = initialDistance;

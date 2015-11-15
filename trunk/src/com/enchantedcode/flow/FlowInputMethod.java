@@ -60,7 +60,7 @@ public class FlowInputMethod extends InputMethodService
   @Override
   public View onCreateInputView()
   {
-    keyboardView = new KeyboardView(this, Flow.baseKeyboard, Flow.shiftKeyboard, Flow.altKeyboard, Flow.altShiftKeyboard);
+    keyboardView = new KeyboardView(this, Flow.baseKeyboard, Flow.shiftKeyboard, Flow.altKeyboard, Flow.altShiftKeyboard, Flow.emojiKeyboard);
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     keyboardView.setShowOverlay(prefs.getBoolean("showPopup", true));
     keyboardView.setOverlayTime((2+prefs.getInt("popupDuration", 3))*100);

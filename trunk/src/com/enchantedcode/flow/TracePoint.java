@@ -1,7 +1,7 @@
 package com.enchantedcode.flow;
 
 /**
- * Copyright 2011-2013 by Peter Eastman
+ * Copyright 2011-2015 by Peter Eastman
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ public class TracePoint
     weight = 1.0f;
   }
 
-  public void addViaKey(char key, float distance, long time)
+  public void addViaKey(int key, float distance, long time)
   {
     for (TracedKey c : viaKeyList)
     {
@@ -72,14 +72,14 @@ public class TracePoint
     }
   }
 
-  public float getKeyDistance(char c)
+  public float getKeyDistance(int c)
   {
     if (c == '\'')
       return keyDistances[26];
     return keyDistances[c-'a'];
   }
 
-  public int getViaKeyIndex(char key)
+  public int getViaKeyIndex(int key)
   {
     if (key >= 'a' && key <= 'z')
       return viaKeyIndices[key-'a'];

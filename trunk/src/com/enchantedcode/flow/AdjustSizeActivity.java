@@ -1,6 +1,6 @@
 package com.enchantedcode.flow;
 
-/* Copyright (C) 2013 by Peter Eastman
+/* Copyright (C) 2013-2015 by Peter Eastman
 
    This program is free software; you can redistribute it and/or modify it under the
    terms of the GNU General Public License as published by the Free Software
@@ -27,7 +27,7 @@ public class AdjustSizeActivity extends Activity implements SeekBar.OnSeekBarCha
     super.onCreate(savedInstanceState);
     setContentView(R.layout.adjustsize);
     FrameLayout view = (FrameLayout) findViewById(R.id.keyboardContainer);
-    keyboardView = new KeyboardView(this, Flow.baseKeyboard, Flow.shiftKeyboard, Flow.altKeyboard, Flow.altShiftKeyboard);
+    keyboardView = new KeyboardView(this, Flow.baseKeyboard, Flow.shiftKeyboard, Flow.altKeyboard, Flow.altShiftKeyboard, Flow.emojiKeyboard);
     view.addView(keyboardView);
     sizeSlider = (SeekBar) findViewById(R.id.sizeSlider);
     positionSlider = (SeekBar) findViewById(R.id.positionSlider);
