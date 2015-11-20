@@ -119,6 +119,12 @@ public class TouchListener implements View.OnTouchListener
     this.dictionary = dictionary;
   }
 
+  public void finish()
+  {
+    isDeleting = false;
+    dragInProgress = false;
+  }
+  
   public boolean onTouch(View view, MotionEvent ev)
   {
     Point keyPositions[] = keyboardView.getKeyPositions();

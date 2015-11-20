@@ -157,6 +157,8 @@ public class FlowInputMethod extends InputMethodService
     if (keyboardView != null && candidatesView != null)
     {
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+      if (touchListener != null)
+        touchListener.finish();
       keyboardView.setOnTouchListener(touchListener = new TouchListener(keyboardView, candidatesView, dictionary));
       touchListener.setInputMethodService(this);
       touchListener.setLongPressDelay(10*prefs.getInt("longPressDelay", 30)+300);
