@@ -50,7 +50,7 @@ public class KeyboardView extends View
   private static final int controlColor = Color.rgb(255, 255, 190);
   private static final int emojiColor = Color.rgb(255, 255, 255);
 
-  public enum ModifierMode {UP, DOWN, LOCKED, EMOJI}
+  public enum ModifierMode {UP, DOWN, LOCKED, EMOJI, EMOJI_LOCKED}
   public static final String AUTO = "AUTO";
   public static final String NO_AUTO = "NO_AUTO";
 
@@ -129,7 +129,7 @@ public class KeyboardView extends View
   {
     boolean shift = (shiftMode != ModifierMode.UP);
     boolean alt = (altMode != ModifierMode.UP);
-    if (shiftMode == ModifierMode.EMOJI)
+    if (shiftMode == ModifierMode.EMOJI || shiftMode == ModifierMode.EMOJI_LOCKED)
     {
       currentKeyboard = emojiKeyboard;
       secondaryKeyboard = emojiKeyboard;
@@ -288,7 +288,7 @@ public class KeyboardView extends View
           shiftPath.offset(x, y+0.4f*textSize, path);
           if (shiftMode == ModifierMode.UP)
             canvas.drawPath(path, pathPaint);
-          else if (shiftMode == ModifierMode.DOWN)
+          else if (shiftMode == ModifierMode.DOWN || shiftMode == ModifierMode.EMOJI)
           {
             pathPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             canvas.drawPath(path, pathPaint);

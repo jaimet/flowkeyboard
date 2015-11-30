@@ -456,6 +456,8 @@ public class TouchListener implements View.OnTouchListener
         shiftMode = KeyboardView.ModifierMode.DOWN;
       else if (shiftMode == KeyboardView.ModifierMode.DOWN)
         shiftMode = KeyboardView.ModifierMode.LOCKED;
+      else if (shiftMode == KeyboardView.ModifierMode.EMOJI)
+        shiftMode = KeyboardView.ModifierMode.EMOJI_LOCKED;
       else
         shiftMode = KeyboardView.ModifierMode.UP;
       keyboardView.setShiftMode(shiftMode);

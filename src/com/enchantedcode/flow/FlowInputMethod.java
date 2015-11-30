@@ -262,7 +262,7 @@ public class FlowInputMethod extends InputMethodService
   {
     if (keyboardView == null || getCurrentInputConnection() == null)
       return;
-    if (keyboardView.getShiftMode() != KeyboardView.ModifierMode.LOCKED && !isSimpleMode())
+    if (keyboardView.getShiftMode() != KeyboardView.ModifierMode.LOCKED && keyboardView.getShiftMode() != KeyboardView.ModifierMode.EMOJI_LOCKED && !isSimpleMode())
     {
       CharSequence before = getCurrentInputConnection().getTextBeforeCursor(5, 0);
       if (before == null)
