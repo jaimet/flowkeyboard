@@ -223,7 +223,7 @@ public class TouchListener implements View.OnTouchListener
     float scale = 1.0f/(keyboardView.getKeySpacing()*keyboardView.getKeySpacing());
     float distances2[] = new float[27];
     findKeyDistances(keyboardView.getKeyboard(), distances2, x, y);
-    if (minSpeed < 0.5f*maxSpeedSinceMin && speed < 0.5f*maxSpeedSinceMin)
+    if ((minSpeed < 0.5f*maxSpeedSinceMin && speed < 0.5f*maxSpeedSinceMin) || trace.size() == 1)
     {
       previous = current;
       current = new TracePoint(x, y);
@@ -234,7 +234,7 @@ public class TouchListener implements View.OnTouchListener
 
 
       TracePoint p = trace.get(numFinalized);
-      if (scale*p.distance2(previous) >= 0.25f)
+      if (scale*p.distance2(previous) >= 0.25f || trace.size() == 1)
       {
         int first = numFinalized;
         int last = trace.size()-2;
